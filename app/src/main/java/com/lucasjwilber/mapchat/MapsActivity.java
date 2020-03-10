@@ -31,6 +31,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -112,11 +113,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     con.disconnect();
 
                                     //dummy data:
-                                    List<Comment> comments = new LinkedList<>();
-                                    comments.add(new Comment("hello", "blachasdlfjasdlf", userLat - 0.001, userLng - 0.001));
-                                    comments.add(new Comment("hi", "blachasdlfjasdlf", userLat + 0.001, userLng - 0.001));
-                                    comments.add(new Comment("yo", "blachasdlfjasdlf", userLat - 0.001, userLng + 0.001));
-                                    comments.add(new Comment("sup", "blachasdlfjasdlf", userLat + 0.001, userLng + 0.001));
+                                    List<Comment<R>> comments = new LinkedList<>();
+                                    comments.add(new Comment<R>("hello", "blachasdlfjasdlf", userLat - 0.001, userLng - 0.001, 120391203));
+                                    comments.add(new Comment<R>("hi", "blachasdlfjasdlf", userLat + 0.001, userLng - 0.001, 12093102));
+                                    comments.add(new Comment<R>("yo", "blachasdlfjasdlf", userLat - 0.001, userLng + 0.001, 12039130));
+                                    comments.add(new Comment<R>("sup", "blachasdlfjasdlf", userLat + 0.001, userLng + 0.001, 12301293));
 
                                     //update map on main thread
                                     Handler handler = new Handler(Looper.getMainLooper()) {
@@ -132,12 +133,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                     .snippet("This is roughly where you are right now"));
 
                                             //add markers using comments from DB
-                                            for (Comment comment : comments) {
+                                            for (Comment<R> comment : comments) {
                                                 mMap.addMarker(new MarkerOptions()
-                                                        .position(new LatLng(comment.lat, comment.lng))
+                                                        .position(new LatLng(comment.getLat(), comment.getLng()))
                                                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
-                                                        .title(comment.title)
-                                                        .snippet(comment.text));
+                                                        .title(comment.getTitle())
+                                                        .snippet(comment.getText()));
                                             }
 
                                             //center the map on the user

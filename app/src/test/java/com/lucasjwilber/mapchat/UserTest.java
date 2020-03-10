@@ -9,9 +9,10 @@ import static org.junit.Assert.*;
  *
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
-public class ExampleUnitTest {
+public class UserTest {
     @Test
-    public void addition_isCorrect() {
-        assertEquals(4, 2 + 2);
+    public void testCommentInstantiate() {
+        User vik = new User("Vik", "vik@gmail.com");
+        System.out.println("vik = " + vik);
     }
 }
