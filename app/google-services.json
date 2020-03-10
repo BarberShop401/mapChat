@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "926778471591",
+    "firebase_url": "https://mapchat-cb88d.firebaseio.com",
+    "project_id": "mapchat-cb88d",
+    "storage_bucket": "mapchat-cb88d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:926778471591:android:a0cc273de3bda6f424d782",
+        "android_client_info": {
+          "package_name": "com.lucasjwilber.mapchat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "926778471591-m5rc8nuol5jsjil6jnjhmtj7dmvudfdi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpiMTau_UBTOJklkSk9foisKILzicggKk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "926778471591-m5rc8nuol5jsjil6jnjhmtj7dmvudfdi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
