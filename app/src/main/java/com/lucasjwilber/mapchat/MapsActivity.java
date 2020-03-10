@@ -23,6 +23,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,7 +45,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public double userLat;
     public double userLng;
     public String userCurrentAddress;
-
+    FirebaseDatabase database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,6 +114,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     in.close();
                                     con.disconnect();
 
+                                    // retrieve instance of Firebase and reference location to write to
+                                    database = FirebaseDatabase.getInstance();
+                                    DatabaseReference myRef = database.getReference("message");
+                                    myRef.setValue("Hello, world!");
+
                                     //dummy data:
                                     List<Comment<R>> comments = new LinkedList<>();
                                     comments.add(new Comment<R>("hello", "blachasdlfjasdlf", userLat - 0.001, userLng - 0.001, 120391203));
@@ -140,6 +147,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                         .title(comment.getTitle())
                                                         .snippet(comment.getText()));
                                             }
+
+
 
                                             //center the map on the user
                                             mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(userLat, userLng)));
