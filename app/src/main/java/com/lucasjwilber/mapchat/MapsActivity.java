@@ -13,6 +13,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -73,6 +74,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        //remove the directions/gps buttons
+        mMap.getUiSettings().setMapToolbarEnabled(false);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         if (ContextCompat.checkSelfPermission(this,
@@ -117,6 +120,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     in.close();
                                     con.disconnect();
 
+                                } catch (MalformedURLException e) {
+                                    Log.i("ljw", "malformedURLexception:\n" + e.toString());
+                                } catch (ProtocolException e) {
+                                    Log.i("ljw", "protocol exception:\n" + e.toString());
+                                } catch (IOException e) {
+                                    Log.i("ljw", "IO exception:\n" + e.toString());
+                                }
+
                                     //dummy data:
                                     List<Comment> comments = new LinkedList<>();
                                     comments.add(new Comment("hello", "blachasdlfjasdlf", userLat - 0.001, userLng - 0.001));
@@ -160,14 +171,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     };
                                     handler.obtainMessage().sendToTarget();
 
-                                } catch (MalformedURLException e) {
-                                    Log.i("ljw", "malformedURLexception:\n" + e.toString());
-                                } catch (ProtocolException e) {
-                                    Log.i("ljw", "protocol exception:\n" + e.toString());
-                                } catch (IOException e) {
-                                    Log.i("ljw", "IO exception:\n" + e.toString());
-                                }
-
                             });
                         }
                     })
@@ -177,7 +180,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    public void addCommentButtonClicked(View v) {
+    public void toggleFormVisibility(View v) {
+        //toggle visibility
         addCommentForm.setVisibility(addCommentForm.getVisibility() == View.VISIBLE ? View.INVISIBLE : View.VISIBLE);
+    }
+
+    public void submitCommentButtonClicked(View v) {
+        //gather form data
+        EditText commentTitleView = findViewById(R.id.commentTitleEditText);
+        String commentTitle = commentTitleView.getText().toString();
+        EditText commentBodyView = findViewById(R.id.commentBodyEditText);
+        String commentBody = commentBodyView.getText().toString();
+
+        //create a Comment object
+        Comment comment = new Comment(commentTitle, commentBody, userLat, userLng);
+        Log.i("ljw", "new comment created: " + comment.toString());
+
+        //push it to DB
+
+        //hide form
+        addCommentForm.setVisibility(View.INVISIBLE);
     }
 }

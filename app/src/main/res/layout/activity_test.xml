@@ -72,7 +72,7 @@
             android:layout_height="35dp"
             android:ems="10"
             android:gravity="start|top"
-            android:onClick="addCommentButtonClicked"
+            android:onClick="toggleFormVisibility"
             android:text="Post"
             android:textStyle="bold"
             tools:text="Post" />

@@ -6,7 +6,9 @@
     android:name="com.google.android.gms.maps.SupportMapFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MapsActivity" >
+    tools:context=".MapsActivity"
+    android:clickable="true"
+    android:onClick="toggleFormVisibility" >
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -24,7 +26,7 @@
             android:layout_marginRight="40dp"
             android:layout_marginBottom="40dp"
             android:clickable="true"
-            android:onClick="addCommentButtonClicked"
+            android:onClick="toggleFormVisibility"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:srcCompat="@drawable/ic_launcher_foreground" />
@@ -45,6 +47,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="22dp"
                 android:text="2901 3rd Ave Seattle, WA"
+                android:layout_gravity="center_horizontal"
                 tools:text="2901 3rd Ave Seattle, WA" />
             <TextView
                 android:id="@+id/commentTitleLabel"
@@ -57,8 +60,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:inputType="textPersonName"
-                android:text="Name" />
+                android:inputType="textPersonName" />
             <TextView
                 android:id="@+id/commentBodyLabel"
                 android:layout_width="wrap_content"
@@ -68,19 +70,21 @@
             <EditText
                 android:id="@+id/commentBodyEditText"
                 android:layout_width="match_parent"
-                android:layout_height="35dp"
+                android:layout_height="wrap_content"
                 android:ems="10"
                 android:gravity="start|top"
                 android:inputType="textMultiLine" />
             <Button
                 android:id="@+id/commentSubmitButton"
                 android:layout_width="match_parent"
-                android:layout_height="35dp"
+                android:layout_height="50dp"
                 android:ems="10"
-                android:gravity="start|top"
+                android:gravity="center_horizontal|center_vertical"
                 android:text="Post"
                 android:textStyle="bold"
-                tools:text="Post" />
+                tools:text="Post"
+                android:clickable="true"
+                android:onClick="submitCommentButtonClicked" />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
