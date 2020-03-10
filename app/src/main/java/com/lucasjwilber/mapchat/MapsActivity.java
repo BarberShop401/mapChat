@@ -12,6 +12,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.view.View;
+import android.widget.LinearLayout;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -23,6 +25,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -42,12 +45,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public double userLat;
     public double userLng;
     public String userCurrentAddress;
+    LinearLayout addCommentForm;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        addCommentForm = findViewById(R.id.addCommentForm);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -169,5 +175,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         Log.i("ljw", "error getting location:\n" + error.toString());
                     });
         }
+    }
+
+    public void addCommentButtonClicked(View v) {
+        addCommentForm.setVisibility(addCommentForm.getVisibility() == View.VISIBLE ? View.INVISIBLE : View.VISIBLE);
     }
 }
