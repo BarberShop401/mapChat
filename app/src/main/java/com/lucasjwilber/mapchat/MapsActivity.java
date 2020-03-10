@@ -21,6 +21,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.BufferedReader;
@@ -39,7 +40,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FusedLocationProviderClient fusedLocationClient;
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     public double userLat;
-    public double userLong;
+    public double userLng;
     public String userCurrentAddress;
 
 
@@ -69,10 +70,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION)
+                Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_PERMISSIONS_REQUEST_LOCATION);
         } else {
             fusedLocationClient.getLastLocation()
@@ -81,15 +82,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
                             userLat = location.getLatitude();
-                            userLong = location.getLongitude();
-                            Log.i("ljw", "lat: " + userLat + "\nlong: " + userLong);
+                            userLng = location.getLongitude();
+                            Log.i("ljw", "lat: " + userLat + "\nlong: " + userLng);
 
                             //call geocode to get address with latLong
                             Log.i("ljw", "calling api...");
                             AsyncTask.execute(() -> {
                                 //TODO: update api key below to support geocode. replace with taskmaster api key temporarily if necessary.
                                 try {
-                                    URL url = new URL("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + userLat + "," + userLong + "&key=AIzaSyBcsEWrD6BkmgWGYZkxVsywLXIaqxsvl-Q");
+                                    URL url = new URL("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + userLat + "," + userLng + "&key=AIzaSyBcsEWrD6BkmgWGYZkxVsywLXIaqxsvl-Q");
 
                                     HttpURLConnection con = (HttpURLConnection) url.openConnection();
                                     con.setRequestMethod("GET");
@@ -110,43 +111,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     in.close();
                                     con.disconnect();
 
-                                    LatLng userCurrentLatLng = new LatLng(userLat, userLong);
-
-                                    //dummy data for comments (markers) near the user:
-                                    List<MarkerOptions> allMarkers = new LinkedList<>();
-                                    allMarkers.add(new MarkerOptions()
-                                            .position(new LatLng(userLat + 0.01, userLong + 0.01))
-                                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
-                                            .title("comment number 1"));
-                                    allMarkers.add(new MarkerOptions()
-                                            .position(new LatLng(userLat + 0.02, userLong - 0.01))
-                                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
-                                            .title("comment number 2"));
-                                    allMarkers.add(new MarkerOptions()
-                                            .position(new LatLng(userLat - 0.03, userLong - 0.02))
-                                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
-                                            .title("comment number 3"));
+                                    //dummy data:
+                                    List<Comment> comments = new LinkedList<>();
+                                    comments.add(new Comment("hello", "blachasdlfjasdlf", userLat - 0.001, userLng - 0.001));
+                                    comments.add(new Comment("hi", "blachasdlfjasdlf", userLat + 0.001, userLng - 0.001));
+                                    comments.add(new Comment("yo", "blachasdlfjasdlf", userLat - 0.001, userLng + 0.001));
+                                    comments.add(new Comment("sup", "blachasdlfjasdlf", userLat + 0.001, userLng + 0.001));
 
                                     //update map on main thread
                                     Handler handler = new Handler(Looper.getMainLooper()) {
                                         @Override
                                         public void handleMessage(Message input) {
-                                            Log.i("ljw", "lat/lng for marker is " + userLat + "/" + userLong);
+                                            Log.i("ljw", "lat/lng for user is " + userLat + "/" + userLng);
 
+                                            //add a marker to display the user's location:
                                             mMap.addMarker(new MarkerOptions()
-                                                    .position(userCurrentLatLng)
+                                                    .position(new LatLng(userLat, userLng))
                                                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
-                                                    .title("My Location"));
+                                                    .title("My Location")
+                                                    .snippet("This is roughly where you are right now"));
 
-                                            //add dummy data markers:
-                                            for (MarkerOptions marker : allMarkers) {
-                                                mMap.addMarker(marker);
+                                            //add markers using comments from DB
+                                            for (Comment comment : comments) {
+                                                mMap.addMarker(new MarkerOptions()
+                                                        .position(new LatLng(comment.lat, comment.lng))
+                                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+                                                        .title(comment.title)
+                                                        .snippet(comment.text));
                                             }
 
-                                            mMap.moveCamera(CameraUpdateFactory.newLatLng(userCurrentLatLng));
+                                            //center the map on the user
+                                            mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(userLat, userLng)));
+
                                             //this zooms in on the user's location by restricting how far you can zoom out:
                                             //TODO: set the default zoom but somehow still allow users to zoom out farther than that
                                             mMap.setMinZoomPreference((float) 14.0);
+
                                             //using map type 2 to remove clutter, so only our markers are displayed:
                                             //https://developers.google.com/android/reference/com/google/android/gms/maps/GoogleMap#setMapType(int)
                                             mMap.setMapType(2);
