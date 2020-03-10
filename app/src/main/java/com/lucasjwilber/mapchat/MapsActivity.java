@@ -1,5 +1,6 @@
 package com.lucasjwilber.mapchat;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -23,6 +24,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -45,7 +48,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public double userLat;
     public double userLng;
     public String userCurrentAddress;
-    FirebaseDatabase database;
+    FirebaseDatabase dbInstance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +58,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+    }
+
+    private void writeNewCommentToDB(String title, String body, double userLat, double userLng, long timestamp) {
+        Comment newComment = new Comment(title, body, userLat, userLng, timestamp);
+        DatabaseReference dbRef = dbInstance.getReference();
+        dbRef.setValue(newComment);
     }
 
 
@@ -115,16 +124,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     con.disconnect();
 
                                     // retrieve instance of Firebase and reference location to write to
-                                    database = FirebaseDatabase.getInstance();
-                                    DatabaseReference myRef = database.getReference("message");
-                                    myRef.setValue("Hello, world!");
+                                    // myRef.getKey() gets the parameter in database.getReference(parameter)
+                                    dbInstance = FirebaseDatabase.getInstance();
+                                    writeNewCommentToDB("hello", "blachasdlfjasdlf", userLat - 0.001, userLng - 0.001, 120391203);
+                                    writeNewCommentToDB("hi", "blachasdlfjasdlf", userLat + 0.001, userLng - 0.001, 12093102);
 
                                     //dummy data:
-                                    List<Comment<R>> comments = new LinkedList<>();
-                                    comments.add(new Comment<R>("hello", "blachasdlfjasdlf", userLat - 0.001, userLng - 0.001, 120391203));
-                                    comments.add(new Comment<R>("hi", "blachasdlfjasdlf", userLat + 0.001, userLng - 0.001, 12093102));
-                                    comments.add(new Comment<R>("yo", "blachasdlfjasdlf", userLat - 0.001, userLng + 0.001, 12039130));
-                                    comments.add(new Comment<R>("sup", "blachasdlfjasdlf", userLat + 0.001, userLng + 0.001, 12301293));
+//                                    List<Comment<R>> comments = new LinkedList<>();
+//                                    comments.add(new Comment<R>("hello", "blachasdlfjasdlf", userLat - 0.001, userLng - 0.001, 120391203));
+//                                    comments.add(new Comment<R>("hi", "blachasdlfjasdlf", userLat + 0.001, userLng - 0.001, 12093102));
+//                                    comments.add(new Comment<R>("yo", "blachasdlfjasdlf", userLat - 0.001, userLng + 0.001, 12039130));
+//                                    comments.add(new Comment<R>("sup", "blachasdlfjasdlf", userLat + 0.001, userLng + 0.001, 12301293));
 
                                     //update map on main thread
                                     Handler handler = new Handler(Looper.getMainLooper()) {
@@ -140,13 +150,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                     .snippet("This is roughly where you are right now"));
 
                                             //add markers using comments from DB
-                                            for (Comment<R> comment : comments) {
-                                                mMap.addMarker(new MarkerOptions()
-                                                        .position(new LatLng(comment.getLat(), comment.getLng()))
-                                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
-                                                        .title(comment.getTitle())
-                                                        .snippet(comment.getText()));
-                                            }
+//                                            for (Comment<R> comment : comments) {
+//                                                mMap.addMarker(new MarkerOptions()
+//                                                        .position(new LatLng(comment.getLat(), comment.getLng()))
+//                                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+//                                                        .title(comment.getTitle())
+//                                                        .snippet(comment.getText()));
+//                                            }
 
 
 

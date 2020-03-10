@@ -14,5 +14,7 @@ public class UserTest {
     public void testCommentInstantiate() {
         User vik = new User("Vik", "vik@gmail.com");
         System.out.println("vik = " + vik);
+        assertEquals("Vik", vik.getUsername());
+        assertEquals("vik@gmail.com", vik.getEmail());
     }
 }
