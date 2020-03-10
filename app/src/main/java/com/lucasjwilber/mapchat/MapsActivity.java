@@ -6,6 +6,9 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,11 +25,10 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -47,6 +49,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public double userLng;
     public String userCurrentAddress;
     LinearLayout addCommentForm;
+    BitmapDescriptor commentIcon;
+    BitmapDescriptor userIcon;
 
 
 
@@ -55,6 +59,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         addCommentForm = findViewById(R.id.addCommentForm);
+
+        commentIcon = BitmapDescriptorFactory.fromBitmap(getBitmap(R.drawable.ic_chat_icon));
+        userIcon = BitmapDescriptorFactory.fromBitmap(getBitmap(R.drawable.ic_user_pin));
+
+
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -146,6 +156,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                     .position(new LatLng(userLat, userLng))
                                                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
                                                     .title("My Location")
+                                                    .icon(userIcon)
                                                     .snippet("This is roughly where you are right now"));
 
                                             //add markers using comments from DB
@@ -154,6 +165,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                         .position(new LatLng(comment.lat, comment.lng))
                                                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
                                                         .title(comment.title)
+                                                        .icon(commentIcon)
                                                         .snippet(comment.text));
                                             }
 
@@ -162,7 +174,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                             //this zooms in on the user's location by restricting how far you can zoom out:
                                             //TODO: set the default zoom but somehow still allow users to zoom out farther than that
-                                            mMap.setMinZoomPreference((float) 14.0);
+                                            mMap.setMinZoomPreference((float) 15.0);
 
                                             //using map type 2 to remove clutter, so only our markers are displayed:
                                             //https://developers.google.com/android/reference/com/google/android/gms/maps/GoogleMap#setMapType(int)
@@ -201,4 +213,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //hide form
         addCommentForm.setVisibility(View.INVISIBLE);
     }
+
+    private Bitmap getBitmap(int drawableRes) {
+        Drawable drawable = getResources().getDrawable(drawableRes);
+        Canvas canvas = new Canvas();
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        canvas.setBitmap(bitmap);
+        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+        drawable.draw(canvas);
+
+        return bitmap;
+    }
+
+
 }

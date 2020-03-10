@@ -29,7 +29,7 @@
             android:onClick="toggleFormVisibility"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:srcCompat="@drawable/ic_launcher_foreground" />
+            app:srcCompat="@drawable/ic_chat_icon" />
 
         <LinearLayout
             android:id="@+id/addCommentForm"
