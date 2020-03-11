@@ -1,5 +1,6 @@
 package com.lucasjwilber.mapchat;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -29,6 +30,14 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,8 +46,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -48,6 +61,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public double userLat;
     public double userLng;
     public String userCurrentAddress;
+
+    FirebaseFirestore dbInstance;
+  
     LinearLayout addCommentForm;
     BitmapDescriptor commentIcon;
     BitmapDescriptor userIcon;
@@ -69,6 +85,46 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+    }
+
+    private void writeNewCommentToDB(String title, String body, double userLat, double userLng, long timestamp) {
+        Comment newComment = new Comment(title, body, userLat, userLng, timestamp);
+        // Create a new user with a first and last name
+
+        Map<String, Object> user = new HashMap<>();
+        user.put("first", "Ada");
+        user.put("last", "Lovelace");
+        user.put("born", 1815);
+
+// Add a new document with a generated ID
+        dbInstance.collection("users")
+                .add(user)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.i("vik", "DocumentSnapshot added with ID: " + documentReference.getId());
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.i("vik", "Error adding document", e);
+                    }
+                });
+        dbInstance.collection("users")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                                Log.i("vik", document.getId() + " => " + document.getData());
+                            }
+                        } else {
+                            Log.i("vik", "Error getting documents.", task.getException());
+                        }
+                    }
+                });
     }
 
 
@@ -130,6 +186,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     in.close();
                                     con.disconnect();
 
+                                    // retrieve instance of Firebase and reference location to write to
+                                    // myRef.getKey() gets the parameter in database.getReference(parameter)
+                                    dbInstance = FirebaseFirestore.getInstance();
+                                    writeNewCommentToDB("hello", "blachasdlfjasdlf", userLat - 0.001, userLng - 0.001, 120391203);
+
                                 } catch (MalformedURLException e) {
                                     Log.i("ljw", "malformedURLexception:\n" + e.toString());
                                 } catch (ProtocolException e) {
@@ -139,11 +200,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 }
 
                                     //dummy data:
-                                    List<Comment> comments = new LinkedList<>();
-                                    comments.add(new Comment("hello", "blachasdlfjasdlf", userLat - 0.001, userLng - 0.001));
-                                    comments.add(new Comment("hi", "blachasdlfjasdlf", userLat + 0.001, userLng - 0.001));
-                                    comments.add(new Comment("yo", "blachasdlfjasdlf", userLat - 0.001, userLng + 0.001));
-                                    comments.add(new Comment("sup", "blachasdlfjasdlf", userLat + 0.001, userLng + 0.001));
+//                                    List<Comment<R>> comments = new LinkedList<>();
+//                                    comments.add(new Comment<R>("hello", "blachasdlfjasdlf", userLat - 0.001, userLng - 0.001, 120391203));
+//                                    comments.add(new Comment<R>("hi", "blachasdlfjasdlf", userLat + 0.001, userLng - 0.001, 12093102));
+//                                    comments.add(new Comment<R>("yo", "blachasdlfjasdlf", userLat - 0.001, userLng + 0.001, 12039130));
+//                                    comments.add(new Comment<R>("sup", "blachasdlfjasdlf", userLat + 0.001, userLng + 0.001, 12301293));
 
                                     //update map on main thread
                                     Handler handler = new Handler(Looper.getMainLooper()) {
@@ -160,14 +221,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                     .snippet("This is roughly where you are right now"));
 
                                             //add markers using comments from DB
-                                            for (Comment comment : comments) {
-                                                mMap.addMarker(new MarkerOptions()
-                                                        .position(new LatLng(comment.lat, comment.lng))
-                                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
-                                                        .title(comment.title)
-                                                        .icon(commentIcon)
-                                                        .snippet(comment.text));
-                                            }
+//                                            for (Comment<R> comment : comments) {
+//                                                mMap.addMarker(new MarkerOptions()
+//                                                        .position(new LatLng(comment.getLat(), comment.getLng()))
+//                                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+//                                                        .title(comment.getTitle())
+//                                                        .snippet(comment.getText()));
+//                                            }
+
 
                                             //center the map on the user
                                             mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(userLat, userLng)));
