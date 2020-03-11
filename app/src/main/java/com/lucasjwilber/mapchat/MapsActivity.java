@@ -21,6 +21,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -66,6 +67,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     FirebaseFirestore dbInstance;
     LinearLayout addCommentForm;
     LinearLayout addReplyForm;
+    TextView userLocationTV;
     BitmapDescriptor commentIcon;
     BitmapDescriptor userIcon;
 
@@ -75,6 +77,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
         addCommentForm = findViewById(R.id.addCommentForm);
         addReplyForm = findViewById(R.id.addReplyForm);
+        userLocationTV = findViewById(R.id.commentLocationTextView);
 
         commentIcon = BitmapDescriptorFactory.fromBitmap(getBitmap(R.drawable.ic_chat_icon));
         userIcon = BitmapDescriptorFactory.fromBitmap(getBitmap(R.drawable.ic_user_pin));
@@ -326,6 +329,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             in.close();
             con.disconnect();
 
+            String postingFromString = "Posting from " + userCurrentAddress;
+            Handler handler = new Handler(Looper.getMainLooper()) {
+                @Override
+                public void handleMessage(Message input) {
+                    userLocationTV.setText(postingFromString);
+                }
+            };
+            handler.obtainMessage().sendToTarget();
+
         } catch (MalformedURLException e) {
             Log.i("ljw", "malformedURLexception:\n" + e.toString());
         } catch (ProtocolException e) {
@@ -349,6 +361,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onInfoWindowLongClick(Marker marker) {
         Log.i("ljw", marker.getId() + " long pressed");
+        // so that you can't reply to your user pin:
+        if (marker.getId().equals("m0")) return;
 
         //toggle visibility
         addReplyForm.setVisibility(View.VISIBLE);
@@ -361,6 +375,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void addReplyToComment(View v) {
+        Log.i("ljw", "reply button clicked");
+
         //make reply
 
         //add it to db

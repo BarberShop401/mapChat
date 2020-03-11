@@ -63,14 +63,14 @@
             <TextView
                 android:id="@+id/commentLocationTextView"
                 android:layout_width="match_parent"
-                android:layout_height="22dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 android:layout_marginLeft="15dp"
                 android:layout_marginRight="15dp"
-                android:text="2901 3rd Ave Seattle, WA"
+                android:text="Your Location"
                 android:textAlignment="center"
-                android:layout_gravity="center_horizontal"
-                tools:text="2901 3rd Ave Seattle, WA" />
+                android:textSize="12sp"
+                android:layout_gravity="center_horizontal" />
             <TextView
                 android:id="@+id/commentTitleLabel"
                 android:layout_width="wrap_content"
