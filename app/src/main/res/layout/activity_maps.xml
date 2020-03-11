@@ -18,6 +18,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="show popup"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintLeft_toRightOf="parent"
+            android:onClick="showPopup"/>
+
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/addCommentButton"
             android:layout_width="wrap_content"
@@ -102,6 +112,8 @@
                 android:clickable="true"
                 android:onClick="submitCommentButtonClicked" />
         </LinearLayout>
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
