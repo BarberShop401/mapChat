@@ -24,10 +24,14 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,8 +41,11 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -48,7 +55,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public double userLat;
     public double userLng;
     public String userCurrentAddress;
-    FirebaseDatabase dbInstance;
+    FirebaseFirestore dbInstance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,8 +69,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void writeNewCommentToDB(String title, String body, double userLat, double userLng, long timestamp) {
         Comment newComment = new Comment(title, body, userLat, userLng, timestamp);
-        DatabaseReference dbRef = dbInstance.getReference();
-        dbRef.setValue(newComment);
+        // Create a new user with a first and last name
+
+        Map<String, Object> user = new HashMap<>();
+        user.put("first", "Ada");
+        user.put("last", "Lovelace");
+        user.put("born", 1815);
+
+// Add a new document with a generated ID
+        dbInstance.collection("users")
+                .add(user)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.i("vik", "DocumentSnapshot added with ID: " + documentReference.getId());
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.i("vik", "Error adding document", e);
+                    }
+                });
+        dbInstance.collection("users")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                                Log.i("vik", document.getId() + " => " + document.getData());
+                            }
+                        } else {
+                            Log.i("vik", "Error getting documents.", task.getException());
+                        }
+                    }
+                });
     }
 
 
@@ -125,9 +166,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                     // retrieve instance of Firebase and reference location to write to
                                     // myRef.getKey() gets the parameter in database.getReference(parameter)
-                                    dbInstance = FirebaseDatabase.getInstance();
+                                    dbInstance = FirebaseFirestore.getInstance();
                                     writeNewCommentToDB("hello", "blachasdlfjasdlf", userLat - 0.001, userLng - 0.001, 120391203);
-                                    writeNewCommentToDB("hi", "blachasdlfjasdlf", userLat + 0.001, userLng - 0.001, 12093102);
 
                                     //dummy data:
 //                                    List<Comment<R>> comments = new LinkedList<>();
