@@ -15,9 +15,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -40,7 +43,7 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, PopupMenu.OnMenuItemClickListener {
 
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationClient;
@@ -69,8 +72,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
+
     }
 
+    public void showPopup(View v){
+        PopupMenu popup = new PopupMenu(this, v);
+        popup.setOnMenuItemClickListener(this);
+        popup.inflate(R.menu.menu_popup);
+        popup.show();
+    }
 
     /**
      * Manipulates the map once available.
@@ -226,4 +238,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-}
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+//        switch(item.getItemId()){
+//            case R.id.item1:
+//                Toast.makeText(this,"item1clicked",Toast.LENGTH_SHORT).show();
+//            return true;
+    return false;
+
+        }
+    }
+
+
