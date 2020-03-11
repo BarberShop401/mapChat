@@ -138,12 +138,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     Log.i("ljw", "IO exception:\n" + e.toString());
                                 }
 
-                                    //dummy data:
-                                    List<Comment> comments = new LinkedList<>();
-                                    comments.add(new Comment("hello", "blachasdlfjasdlf", userLat - 0.001, userLng - 0.001));
-                                    comments.add(new Comment("hi", "blachasdlfjasdlf", userLat + 0.001, userLng - 0.001));
-                                    comments.add(new Comment("yo", "blachasdlfjasdlf", userLat - 0.001, userLng + 0.001));
-                                    comments.add(new Comment("sup", "blachasdlfjasdlf", userLat + 0.001, userLng + 0.001));
+                                //dummy data:
+                                List<Comment> comments = new LinkedList<>();
+                                comments.add(new Comment("hello", "blachasdlfjasdlf", userLat - 0.001, userLng - 0.001));
+                                comments.add(new Comment("hi", "blachasdlfjasdlf", userLat + 0.002, userLng - 0.002));
+                                comments.add(new Comment("yo", "blachasdlfjasdlf", userLat - 0.001, userLng + 0.004));
+                                comments.add(new Comment("sup", "blachasdlfjasdlf", userLat + 0.003, userLng + 0.001));
+                                comments.add(new Comment("yo", "blachasdlfjasdlf", userLat - 0.005, userLng + 0.002));
+                                comments.add(new Comment("sup", "blachasdlfjasdlf", userLat + 0.001, userLng + 0.005));
+                                comments.add(new Comment("hi", "blachasdlfjasdlf", userLat + 0.007, userLng - 0.007));
+                                comments.add(new Comment("yo", "blachasdlfjasdlf", userLat - 0.01, userLng + 0.024));
+                                comments.add(new Comment("sup", "blachasdlfjasdlf", userLat + 0.004, userLng + 0.011));
+                                comments.add(new Comment("yo", "blachasdlfjasdlf", userLat - 0.007, userLng + 0.022));
+                                comments.add(new Comment("sup", "blachasdlfjasdlf", userLat + 0.011, userLng + 0.005));
 
                                     //update map on main thread
                                     Handler handler = new Handler(Looper.getMainLooper()) {
@@ -157,7 +164,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
                                                     .title("My Location")
                                                     .icon(userIcon)
-                                                    .snippet("This is roughly where you are right now"));
+                                                    .snippet(userCurrentAddress));
 
                                             //add markers using comments from DB
                                             for (Comment comment : comments) {
@@ -166,7 +173,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
                                                         .title(comment.title)
                                                         .icon(commentIcon)
-                                                        .snippet(comment.text));
+                                                        .snippet(comment.text + "\n" + comment.lat + "," + comment.lng));
+
                                             }
 
                                             //center the map on the user
