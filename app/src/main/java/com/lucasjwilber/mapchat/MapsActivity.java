@@ -65,6 +65,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public String userCurrentAddress;
     FirebaseFirestore dbInstance;
     LinearLayout addCommentForm;
+    LinearLayout addReplyForm;
     BitmapDescriptor commentIcon;
     BitmapDescriptor userIcon;
 
@@ -73,6 +74,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         addCommentForm = findViewById(R.id.addCommentForm);
+        addReplyForm = findViewById(R.id.addReplyForm);
 
         commentIcon = BitmapDescriptorFactory.fromBitmap(getBitmap(R.drawable.ic_chat_icon));
         userIcon = BitmapDescriptorFactory.fromBitmap(getBitmap(R.drawable.ic_user_pin));
@@ -154,6 +156,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         CommentWindowAdapter windowAdapter = new CommentWindowAdapter(getApplicationContext());
         mMap.setInfoWindowAdapter(windowAdapter);
         mMap.setOnInfoWindowLongClickListener(this::onInfoWindowLongClick);
+        mMap.setOnMapClickListener(this::onMapClick);
 
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -333,6 +336,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
+    public void onMapClick(LatLng arg0) {
+        addReplyForm.setVisibility(View.INVISIBLE);
+        addCommentForm.setVisibility(View.INVISIBLE);
+    }
+
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         return false;
@@ -342,12 +350,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onInfoWindowLongClick(Marker marker) {
         Log.i("ljw", marker.getId() + " long pressed");
 
-        //show the add reply form
+        //toggle visibility
+        addReplyForm.setVisibility(View.VISIBLE);
 
         //user marker.getTag() to get the object(Comment/replies whatever) attached to it
 
-        //add the reply to the db
+        //add the reply to the db with addReplyToComment
 
         //refresh the window with showInfoWindow()
+    }
+
+    public void addReplyToComment(View v) {
+        //make reply
+
+        //add it to db
+
+        //hide form
+
     }
 }
