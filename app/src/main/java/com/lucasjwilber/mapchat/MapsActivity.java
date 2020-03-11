@@ -44,14 +44,12 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -63,13 +61,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public double userLat;
     public double userLng;
     public String userCurrentAddress;
-
     FirebaseFirestore dbInstance;
-  
     LinearLayout addCommentForm;
     BitmapDescriptor commentIcon;
     BitmapDescriptor userIcon;
-
 
 
     @Override
@@ -81,7 +76,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         commentIcon = BitmapDescriptorFactory.fromBitmap(getBitmap(R.drawable.ic_chat_icon));
         userIcon = BitmapDescriptorFactory.fromBitmap(getBitmap(R.drawable.ic_user_pin));
 
-
+        dbInstance = FirebaseFirestore.getInstance();
+        getCommentsFromDbAndCreateMapMarkers();
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -90,52 +86,52 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 //    pop up method to show hamburger
-    public void showPopup(View v){
+    public void showPopup(View v) {
         PopupMenu popup = new PopupMenu(this, v);
         popup.setOnMenuItemClickListener(this);
         popup.inflate(R.menu.menu_popup);
         popup.show();
     }
 
-    private void writeNewCommentToDB(String title, String body, double userLat, double userLng, long timestamp) {
-        Comment newComment = new Comment(title, body, userLat, userLng, timestamp);
-        // Create a new user with a first and last name
-
-        Map<String, Object> user = new HashMap<>();
-        user.put("first", "Ada");
-        user.put("last", "Lovelace");
-        user.put("born", 1815);
-
-// Add a new document with a generated ID
-        dbInstance.collection("users")
-                .add(user)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Log.i("vik", "DocumentSnapshot added with ID: " + documentReference.getId());
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.i("vik", "Error adding document", e);
-                    }
-                });
-        dbInstance.collection("users")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
-                                Log.i("vik", document.getId() + " => " + document.getData());
-                            }
-                        } else {
-                            Log.i("vik", "Error getting documents.", task.getException());
-                        }
-                    }
-                });
-    }
+//    private void writeNewCommentToDB(String title, String body, double userLat, double userLng, long timestamp) {
+//        Comment newComment = new Comment(title, body, userLat, userLng, timestamp);
+//        // Create a new user with a first and last name
+//
+//        Map<String, Object> user = new HashMap<>();
+//        user.put("first", "Ada");
+//        user.put("last", "Lovelace");
+//        user.put("born", 1815);
+//
+//// Add a new document with a generated ID
+//        dbInstance.collection("users")
+//                .add(user)
+//                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+//                    @Override
+//                    public void onSuccess(DocumentReference documentReference) {
+//                        Log.i("vik", "DocumentSnapshot added with ID: " + documentReference.getId());
+//                    }
+//                })
+//                .addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        Log.i("vik", "Error adding document", e);
+//                    }
+//                });
+//        dbInstance.collection("users")
+//            .get()
+//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//        @Override
+//        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//            if (task.isSuccessful()) {
+//                for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+//                    Log.i("vik", document.getId() + " => " + document.getData());
+//                }
+//            } else {
+//                Log.i("vik", "Error getting documents.", task.getException());
+//            }
+//        }
+//    });
+//    }
 
 
     /**
@@ -171,12 +167,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             userLng = location.getLongitude();
                             Log.i("ljw", "lat: " + userLat + "\nlong: " + userLng);
 
-                            //call geocode to get address with latLong
-                            Log.i("ljw", "calling api...");
+                            //call geocode to get formatted address
+                            Log.i("ljw", "calling geocode api...");
                             AsyncTask.execute(() -> {
-                                //TODO: update api key below to support geocode. replace with taskmaster api key temporarily if necessary.
                                 try {
-                                    URL url = new URL("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + userLat + "," + userLng + "&key=AIzaSyBcsEWrD6BkmgWGYZkxVsywLXIaqxsvl-Q");
+                                    URL url = new URL("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + userLat + "," + userLng + "&key=AIzaSyAy2p9oGlSYUvXCQE0K8az2NcFKPK_YVEY");
 
                                     HttpURLConnection con = (HttpURLConnection) url.openConnection();
                                     con.setRequestMethod("GET");
@@ -197,11 +192,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     in.close();
                                     con.disconnect();
 
-                                    // retrieve instance of Firebase and reference location to write to
-                                    // myRef.getKey() gets the parameter in database.getReference(parameter)
-                                    dbInstance = FirebaseFirestore.getInstance();
-                                    writeNewCommentToDB("hello", "blachasdlfjasdlf", userLat - 0.001, userLng - 0.001, 120391203);
-
                                 } catch (MalformedURLException e) {
                                     Log.i("ljw", "malformedURLexception:\n" + e.toString());
                                 } catch (ProtocolException e) {
@@ -209,13 +199,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 } catch (IOException e) {
                                     Log.i("ljw", "IO exception:\n" + e.toString());
                                 }
-
-                                    //dummy data:
-//                                    List<Comment<R>> comments = new LinkedList<>();
-//                                    comments.add(new Comment<R>("hello", "blachasdlfjasdlf", userLat - 0.001, userLng - 0.001, 120391203));
-//                                    comments.add(new Comment<R>("hi", "blachasdlfjasdlf", userLat + 0.001, userLng - 0.001, 12093102));
-//                                    comments.add(new Comment<R>("yo", "blachasdlfjasdlf", userLat - 0.001, userLng + 0.001, 12039130));
-//                                    comments.add(new Comment<R>("sup", "blachasdlfjasdlf", userLat + 0.001, userLng + 0.001, 12301293));
 
                                     //update map on main thread
                                     Handler handler = new Handler(Looper.getMainLooper()) {
@@ -229,17 +212,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
                                                     .title("My Location")
                                                     .icon(userIcon)
-                                                    .snippet("This is roughly where you are right now"));
-
-                                            //add markers using comments from DB
-//                                            for (Comment<R> comment : comments) {
-//                                                mMap.addMarker(new MarkerOptions()
-//                                                        .position(new LatLng(comment.getLat(), comment.getLng()))
-//                                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
-//                                                        .title(comment.getTitle())
-//                                                        .snippet(comment.getText()));
-//                                            }
-
+                                                    .snippet(userCurrentAddress));
 
                                             //center the map on the user
                                             mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(userLat, userLng)));
@@ -277,10 +250,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         String commentBody = commentBodyView.getText().toString();
 
         //create a Comment object
-        Comment comment = new Comment(commentTitle, commentBody, userLat, userLng);
+        Comment comment = new Comment(commentTitle, commentBody, userLat, userLng, new Date().getTime());
         Log.i("ljw", "new comment created: " + comment.toString());
 
         //push it to DB
+        dbInstance.collection("comments")
+                .add(comment)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.i("vik", "DocumentSnapshot added with ID: " + documentReference.getId());
+                        Log.i("ljw", "successfully added new comment to DB");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.i("vik", "Error adding document", e);
+                    }
+                });
 
         //hide form
         addCommentForm.setVisibility(View.INVISIBLE);
@@ -295,6 +283,46 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         drawable.draw(canvas);
 
         return bitmap;
+    }
+
+
+    public void getCommentsFromDbAndCreateMapMarkers() {
+        dbInstance.collection("comments")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                                Log.i("ljw", document.getId() + " => " + document.getData());
+                                Map<String, Object> data = document.getData();
+                                String title = (String) data.get("title");
+                                String text = (String) data.get("text");
+                                double lat = (Double) data.get("lat");
+                                double lng = (Double) data.get("lng");
+                                long timestamp = new BigDecimal((Double) data.get("timestamp")).longValue();
+
+                                Comment c = new Comment(
+                                        (String) data.get("title"),
+                                        (String) data.get("text"),
+                                        (Double) data.get("lat"),
+                                        (Double) data.get("lng"),
+                                        timestamp);
+
+                                mMap.addMarker(new MarkerOptions()
+                                    .position(new LatLng(c.getLat(), c.getLng()))
+                                    .icon(commentIcon)
+                                    .title(c.getTitle())
+                                    .snippet(c.getText()));
+
+                                Log.i("ljw", "data: " + title + "," + text + ", " + lat + ", " + lng + ", ");
+                                Log.i("ljw", c.toString());
+                            }
+                        } else {
+                            Log.i("ljw", "Error getting documents.", task.getException());
+                        }
+                    }
+                });
     }
 
 
