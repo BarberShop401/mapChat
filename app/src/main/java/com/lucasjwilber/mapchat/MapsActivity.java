@@ -109,7 +109,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             AsyncTask.execute(() -> {
                                 //TODO: update api key below to support geocode. replace with taskmaster api key temporarily if necessary.
                                 try {
-                                    URL url = new URL("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + userLat + "," + userLng + "&key=AIzaSyBcsEWrD6BkmgWGYZkxVsywLXIaqxsvl-Q");
+                                    URL url = new URL("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + userLat + "," + userLng + "&key=AIzaSyAy2p9oGlSYUvXCQE0K8az2NcFKPK_YVEY");
 
                                     HttpURLConnection con = (HttpURLConnection) url.openConnection();
                                     con.setRequestMethod("GET");
