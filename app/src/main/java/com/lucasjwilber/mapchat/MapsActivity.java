@@ -21,6 +21,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -31,6 +32,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -53,7 +55,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, PopupMenu.OnMenuItemClickListener {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, PopupMenu.OnMenuItemClickListener, GoogleMap.OnInfoWindowLongClickListener {
 
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationClient;
@@ -65,7 +67,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     LinearLayout addCommentForm;
     BitmapDescriptor commentIcon;
     BitmapDescriptor userIcon;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,6 +151,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.getUiSettings().setMapToolbarEnabled(false);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+        CommentWindowAdapter windowAdapter = new CommentWindowAdapter(getApplicationContext());
+        mMap.setInfoWindowAdapter(windowAdapter);
+        mMap.setOnInfoWindowLongClickListener(this::onInfoWindowLongClick);
 
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -170,35 +174,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             //call geocode to get formatted address
                             Log.i("ljw", "calling geocode api...");
                             AsyncTask.execute(() -> {
-                                try {
-                                    URL url = new URL("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + userLat + "," + userLng + "&key=AIzaSyAy2p9oGlSYUvXCQE0K8az2NcFKPK_YVEY");
-
-                                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                                    con.setRequestMethod("GET");
-                                    Log.i("ljw", "called api, reading response...");
-                                    BufferedReader in = new BufferedReader(
-                                            new InputStreamReader(con.getInputStream()));
-                                    String line;
-                                    StringBuilder content = new StringBuilder();
-                                    while ((line = in.readLine()) != null) {
-                                        content.append(line);
-                                        if (line.contains("formatted_address")) {
-                                            userCurrentAddress = line.split("\" : \"")[1];
-                                            userCurrentAddress = userCurrentAddress.substring(0, userCurrentAddress.length() - 2);
-                                            Log.i("ljw", "found formatted addresss: " + userCurrentAddress);
-                                            break;
-                                        }
-                                    }
-                                    in.close();
-                                    con.disconnect();
-
-                                } catch (MalformedURLException e) {
-                                    Log.i("ljw", "malformedURLexception:\n" + e.toString());
-                                } catch (ProtocolException e) {
-                                    Log.i("ljw", "protocol exception:\n" + e.toString());
-                                } catch (IOException e) {
-                                    Log.i("ljw", "IO exception:\n" + e.toString());
-                                }
+                                getUsersFormattedAddress();
 
                                     //update map on main thread
                                     Handler handler = new Handler(Looper.getMainLooper()) {
@@ -242,7 +218,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         addCommentForm.setVisibility(addCommentForm.getVisibility() == View.VISIBLE ? View.INVISIBLE : View.VISIBLE);
     }
 
-    public void submitCommentButtonClicked(View v) {
+    public void addCommentToDB(View v) {
         //gather form data
         EditText commentTitleView = findViewById(R.id.commentTitleEditText);
         String commentTitle = commentTitleView.getText().toString();
@@ -261,6 +237,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onSuccess(DocumentReference documentReference) {
                         Log.i("vik", "DocumentSnapshot added with ID: " + documentReference.getId());
                         Log.i("ljw", "successfully added new comment to DB");
+
+                        //add the new comment to the map now that it's in the db
+                        mMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(userLat, userLng))
+                                .icon(commentIcon)
+                                .title(commentTitle)
+                                .snippet(commentBody));
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -285,7 +268,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return bitmap;
     }
 
-
     public void getCommentsFromDbAndCreateMapMarkers() {
         dbInstance.collection("comments")
                 .get()
@@ -301,13 +283,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 double lat = (Double) data.get("lat");
                                 double lng = (Double) data.get("lng");
                                 long timestamp = new BigDecimal((Double) data.get("timestamp")).longValue();
-
-                                Comment c = new Comment(
-                                        (String) data.get("title"),
-                                        (String) data.get("text"),
-                                        (Double) data.get("lat"),
-                                        (Double) data.get("lng"),
-                                        timestamp);
+                                Comment c = new Comment(title, text, lat, lng, timestamp);
 
                                 mMap.addMarker(new MarkerOptions()
                                     .position(new LatLng(c.getLat(), c.getLng()))
@@ -325,9 +301,53 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 });
     }
 
+    public void getUsersFormattedAddress() {
+        try {
+            URL url = new URL("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + userLat + "," + userLng + "&key=AIzaSyAy2p9oGlSYUvXCQE0K8az2NcFKPK_YVEY");
+
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            Log.i("ljw", "called api, reading response...");
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String line;
+            StringBuilder content = new StringBuilder();
+            while ((line = in.readLine()) != null) {
+                content.append(line);
+                if (line.contains("formatted_address")) {
+                    userCurrentAddress = line.split("\" : \"")[1];
+                    userCurrentAddress = userCurrentAddress.substring(0, userCurrentAddress.length() - 2);
+                    Log.i("ljw", "found formatted addresss: " + userCurrentAddress);
+                    break;
+                }
+            }
+            in.close();
+            con.disconnect();
+
+        } catch (MalformedURLException e) {
+            Log.i("ljw", "malformedURLexception:\n" + e.toString());
+        } catch (ProtocolException e) {
+            Log.i("ljw", "protocol exception:\n" + e.toString());
+        } catch (IOException e) {
+            Log.i("ljw", "IO exception:\n" + e.toString());
+        }
+    }
+
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         return false;
+    }
+
+    @Override
+    public void onInfoWindowLongClick(Marker marker) {
+        Log.i("ljw", marker.getId() + " long pressed");
+
+        //show the add reply form
+
+        //user marker.getTag() to get the object(Comment/replies whatever) attached to it
+
+        //add the reply to the db
+
+        //refresh the window with showInfoWindow()
     }
 }
