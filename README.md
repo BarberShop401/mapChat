@@ -19,7 +19,7 @@ As a user I want the ability to add comments
 Acceptance test: Ensure the comments are being saved in Firebase
 
 #### 2
-As a user, see your own comments appear on Google Maps 
+As a user, see your own comments appear on the map 
 ##### Feature Tasks: 
 1. Display comments that you have made at the location with time
 
@@ -51,25 +51,12 @@ Acceptance Test: Ensure that a new profile is being created
 
 
 ## Wireframes:
- ### Main Activity (MVP):
- ![Main Activity](./assets/barbershop-main-activity.jpg)
-
- ### Playback Activity (Stretch goal):
- ![Playback Activity](./assets/barbershop-playback-activity.jpg)
-
- ### Settings Activity (Stretch goal):
- ![Settings Activity](./assets/barbershop-settings-activity.jpg)
-
- ### Login Activity (Stretch goal):
- ![Login Activity](./assets/barbershop-login-activity.jpg)
-
- ### Help Activity (Stretch goal):
- ![Help Activity](./assets/barbershop-help-activity.jpg)
+![Map View](./assets/mapchat-wireframes.jpg)
 
 
- ## Domain Model
- ### MVP:
-  ![MVP domain model](./assets/barbershop-mvp-domain-model.jpg)
+## Domain Model:
+![Domain Model](./assets/mapchat-domain-model.jpg)
 
-  ### With stretch goals:
-  ![Domain model with stretch goals](./assets/barbershop-domain-model.jpg)
+  
+## DBER: 
+![DBER](./assets/mapchat-dber.jpg)

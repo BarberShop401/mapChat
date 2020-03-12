@@ -1,7 +1,5 @@
 package com.lucasjwilber.mapchat;
 
-import java.util.UUID;
-
 public class Reply {
     private String id;
     private String username;

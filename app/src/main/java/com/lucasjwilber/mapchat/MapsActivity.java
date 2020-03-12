@@ -164,9 +164,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setOnInfoWindowLongClickListener(this::onInfoWindowLongClick);
         mMap.setOnMapClickListener(this::onMapClick);
 
-//        addTestCommentAtLatLng(userLat + 0.001, userLng + 0.001);
-//        addTestCommentAtLatLng(userLat - 0.001, userLng + 0.002);
-
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -395,7 +392,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Log.i("ljw", "query successful");
 
                     Comment c = Objects.requireNonNull(task.getResult()).toObject(Comment.class);
-//                        if (c == null) return;
+                    //these are to prevent NPEs on old comments that didn't have IDs or instantiated LLs:
+                    if (c == null) return;
+                    if (c.replies == null) c.replies = new LinkedList<>();
                     Log.i("ljw", "comment currently has " + c.replies.size() + " replies already:");
                     Log.i("ljw", c.replies.toString());
                     c.replies.add(reply);
@@ -409,7 +408,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             public void onSuccess(Void aVoid) {
                                 Log.i("ljw", "successfully updated comment with new reply");
                                 addReplyForm.setVisibility(View.INVISIBLE);
-                                currentSelectedMarker.showInfoWindow();
+                                replyEditText.setText("");
+
+                                //refresh marker
+                                currentSelectedMarker.remove();
+                                Marker marker = mMap.addMarker(new MarkerOptions()
+                                        .position(new LatLng(c.getLat(), c.getLng()))
+                                        .icon(commentIcon)
+                                        .title(c.getTitle())
+                                        .snippet(c.getText()));
+                                marker.setTag(c);
+                                marker.showInfoWindow();
+                                currentSelectedMarker = marker;
                             }
                         })
                         .addOnFailureListener(new OnFailureListener() {
