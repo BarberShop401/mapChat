@@ -2,7 +2,6 @@ package com.lucasjwilber.mapchat;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 
 public class Comment {
     private String id;

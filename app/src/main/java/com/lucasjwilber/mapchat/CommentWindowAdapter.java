@@ -42,7 +42,9 @@ public class CommentWindowAdapter implements GoogleMap.InfoWindowAdapter {
             SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd-M-yyyy hh:mm:ss", Locale.US);
             String formattedDate = sdf.format(date);
             for (Reply reply : c.replies) {
-                commentHTML.append("<br><p><i><b>" + reply.getUsername() + "</b>, " + formattedDate + "</i></p>");
+                //  TODO: use time for when reply was made, not comment
+//                commentHTML.append("<br><p><i><b>" + reply.getUsername() + "</b>, " + formattedDate + "</i></p>");
+                commentHTML.append("<br><p><i><b>" + reply.getUsername() + "</b></i></p>");
                 commentHTML.append("<p>" + reply.getBody() + "</p>");
             }
         }
