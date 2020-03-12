@@ -63,14 +63,14 @@
             <TextView
                 android:id="@+id/commentLocationTextView"
                 android:layout_width="match_parent"
-                android:layout_height="22dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 android:layout_marginLeft="15dp"
                 android:layout_marginRight="15dp"
-                android:text="2901 3rd Ave Seattle, WA"
+                android:text="Your Location"
                 android:textAlignment="center"
-                android:layout_gravity="center_horizontal"
-                tools:text="2901 3rd Ave Seattle, WA" />
+                android:textSize="12sp"
+                android:layout_gravity="center_horizontal" />
             <TextView
                 android:id="@+id/commentTitleLabel"
                 android:layout_width="wrap_content"
@@ -119,6 +119,50 @@
                 android:background="#ff8c69"
                 android:clickable="true"
                 android:onClick="addCommentToDB" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/addReplyForm"
+            android:layout_width="231dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="invisible"
+            android:background="#fffee0"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.6">
+            <TextView
+                android:id="@+id/replyLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                tools:text="Title" />
+            <EditText
+                android:id="@+id/replyEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:background="#FFFFFF"
+                android:ems="10"
+                android:inputType="textPersonName" />
+            <Button
+                android:id="@+id/replySubmitButton"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_margin="15dp"
+                android:ems="10"
+                android:layout_gravity="center"
+                android:text="Reply"
+                android:textStyle="bold"
+                android:textColor="#FFFF00"
+                android:background="#ff8c69"
+                android:clickable="true"
+                android:onClick="addReplyToComment" />
         </LinearLayout>
 
 

@@ -1,21 +1,26 @@
 package com.lucasjwilber.mapchat;
 
+import java.util.LinkedList;
 import java.util.List;
 
-public class Comment<R> {
+public class Comment {
+    private String id;
     private String title;
     private String text;
     private double lat;
     private double lng;
     private long timestamp;
-    List<Reply<String>> replies;
+    public List<Reply> replies;
 
+    // zero-arg constructor for firestore .toObject method
+    public Comment(){};
     public Comment(String title, String text, double lat, double lng, long timestamp) {
         this.title = title;
         this.text = text;
         this.lat = lat;
         this.lng = lng;
         this.timestamp = timestamp;
+        this.replies = new LinkedList<>();
     }
 
     public String getTitle() {
@@ -58,5 +63,11 @@ public class Comment<R> {
         this.timestamp = timestamp;
     }
 
+    public String getId() {
+        return id;
+    }
 
+    public void setId(String id) {
+        this.id = id;
+    }
 }

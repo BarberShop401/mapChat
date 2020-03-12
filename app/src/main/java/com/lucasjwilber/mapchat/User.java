@@ -1,21 +1,17 @@
 package com.lucasjwilber.mapchat;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class User {
     private String username;
     private String email;
-    private List<Comment<Reply<String>>> comments;
+    private List<Comment> comments;
 
     public User(String username, String email) {
         this.username = username;
         this.email = email;
-    }
-
-    public User(String username, String email, List<Comment<Reply<String>>> comments) {
-        this.username = username;
-        this.email = email;
-        this.comments = comments;
+        this.comments = new LinkedList<>();
     }
 
     public String getUsername() {
@@ -34,11 +30,11 @@ public class User {
         this.email = email;
     }
 
-    public List<Comment<Reply<String>>> getComments() {
+    public List<Comment> getComments() {
         return comments;
     }
 
-    public void setComments(List<Comment<Reply<String>>> comments) {
+    public void setComments(List<Comment> comments) {
         this.comments = comments;
     }
 }

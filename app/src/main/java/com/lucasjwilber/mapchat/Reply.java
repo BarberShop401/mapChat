@@ -1,10 +1,11 @@
 package com.lucasjwilber.mapchat;
 
-public class Reply<S> {
+public class Reply {
     private String username;
     private String body;
     private long timestamp;
 
+    public Reply(){};
     public Reply(String username, String body, long timestamp) {
         this.username = username;
         this.body = body;

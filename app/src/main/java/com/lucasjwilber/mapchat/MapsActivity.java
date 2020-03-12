@@ -21,7 +21,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -39,6 +39,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -46,13 +47,11 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Date;
-import java.util.Map;
 import java.util.Objects;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, PopupMenu.OnMenuItemClickListener, GoogleMap.OnInfoWindowLongClickListener {
@@ -65,14 +64,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public String userCurrentAddress;
     FirebaseFirestore dbInstance;
     LinearLayout addCommentForm;
+    LinearLayout addReplyForm;
+    TextView userLocationTV;
     BitmapDescriptor commentIcon;
     BitmapDescriptor userIcon;
+    Comment currentSelectedComment;
+    String currentSelectedCommentId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         addCommentForm = findViewById(R.id.addCommentForm);
+        addReplyForm = findViewById(R.id.addReplyForm);
+        userLocationTV = findViewById(R.id.commentLocationTextView);
 
         commentIcon = BitmapDescriptorFactory.fromBitmap(getBitmap(R.drawable.ic_chat_icon));
         userIcon = BitmapDescriptorFactory.fromBitmap(getBitmap(R.drawable.ic_user_pin));
@@ -154,6 +159,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         CommentWindowAdapter windowAdapter = new CommentWindowAdapter(getApplicationContext());
         mMap.setInfoWindowAdapter(windowAdapter);
         mMap.setOnInfoWindowLongClickListener(this::onInfoWindowLongClick);
+        mMap.setOnMapClickListener(this::onMapClick);
 
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -174,35 +180,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             //call geocode to get formatted address
                             Log.i("ljw", "calling geocode api...");
                             AsyncTask.execute(() -> {
+
                                 getUsersFormattedAddress();
 
-                                    //update map on main thread
-                                    Handler handler = new Handler(Looper.getMainLooper()) {
-                                        @Override
-                                        public void handleMessage(Message input) {
-                                            Log.i("ljw", "lat/lng for user is " + userLat + "/" + userLng);
+                                //update map on main thread
+                                Handler handler = new Handler(Looper.getMainLooper()) {
+                                    @Override
+                                    public void handleMessage(Message input) {
+                                        Log.i("ljw", "lat/lng for user is " + userLat + "/" + userLng);
 
-                                            //add a marker to display the user's location:
-                                            mMap.addMarker(new MarkerOptions()
-                                                    .position(new LatLng(userLat, userLng))
-                                                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
-                                                    .title("My Location")
-                                                    .icon(userIcon)
-                                                    .snippet(userCurrentAddress));
+                                        //add a marker to display the user's location:
+                                        mMap.addMarker(new MarkerOptions()
+                                            .position(new LatLng(userLat, userLng))
+                                            .title("My Location")
+                                            .icon(userIcon)
+                                            .snippet(userCurrentAddress));
 
-                                            //center the map on the user
-                                            mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(userLat, userLng)));
+                                        //center the map on the user
+                                        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(userLat, userLng)));
 
-                                            //this zooms in on the user's location by restricting how far you can zoom out:
-                                            //TODO: set the default zoom but somehow still allow users to zoom out farther than that
-                                            mMap.setMinZoomPreference((float) 15.0);
+                                        //this zooms in on the user's location by restricting how far you can zoom out:
+                                        //TODO: set the default zoom but somehow still allow users to zoom out farther than that
+                                        mMap.setMinZoomPreference((float) 15.0);
 
-                                            //using map type 2 to remove clutter, so only our markers are displayed:
-                                            //https://developers.google.com/android/reference/com/google/android/gms/maps/GoogleMap#setMapType(int)
-                                            mMap.setMapType(2);
-                                        }
-                                    };
-                                    handler.obtainMessage().sendToTarget();
+                                        //using map type 2 to remove clutter, so only our markers are displayed:
+                                        //https://developers.google.com/android/reference/com/google/android/gms/maps/GoogleMap#setMapType(int)
+                                        mMap.setMapType(2);
+                                    }
+                                };
+                                handler.obtainMessage().sendToTarget();
 
                             });
                         }
@@ -277,22 +283,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
                                 Log.i("ljw", document.getId() + " => " + document.getData());
-                                Map<String, Object> data = document.getData();
-                                String title = (String) data.get("title");
-                                String text = (String) data.get("text");
-                                double lat = (Double) data.get("lat");
-                                double lng = (Double) data.get("lng");
-                                long timestamp = new BigDecimal((Double) data.get("timestamp")).longValue();
-                                Comment c = new Comment(title, text, lat, lng, timestamp);
+                                Comment c = Objects.requireNonNull(document.toObject(Comment.class));
 
-                                mMap.addMarker(new MarkerOptions()
+                                Marker marker = mMap.addMarker(new MarkerOptions()
                                     .position(new LatLng(c.getLat(), c.getLng()))
                                     .icon(commentIcon)
                                     .title(c.getTitle())
                                     .snippet(c.getText()));
-
-                                Log.i("ljw", "data: " + title + "," + text + ", " + lat + ", " + lng + ", ");
-                                Log.i("ljw", c.toString());
+                                marker.setTag(c);
                             }
                         } else {
                             Log.i("ljw", "Error getting documents.", task.getException());
@@ -323,6 +321,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             in.close();
             con.disconnect();
 
+            String postingFromString = "Posting from " + userCurrentAddress;
+            Handler handler = new Handler(Looper.getMainLooper()) {
+                @Override
+                public void handleMessage(Message input) {
+                    userLocationTV.setText(postingFromString);
+                }
+            };
+            handler.obtainMessage().sendToTarget();
+
         } catch (MalformedURLException e) {
             Log.i("ljw", "malformedURLexception:\n" + e.toString());
         } catch (ProtocolException e) {
@@ -332,6 +339,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    public void onMapClick(LatLng arg0) {
+        addReplyForm.setVisibility(View.INVISIBLE);
+        addCommentForm.setVisibility(View.INVISIBLE);
+    }
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
@@ -341,13 +352,61 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onInfoWindowLongClick(Marker marker) {
         Log.i("ljw", marker.getId() + " long pressed");
+        // so that you can't reply to your user pin:
+        if (marker.getId().equals("m0")) return;
 
-        //show the add reply form
+        addReplyForm.setVisibility(View.VISIBLE);
+        Comment c = (Comment) marker.getTag();
+        if (c != null) {
+            currentSelectedComment = c;
+            if (c.getId() == null) Log.i("ljw", "id is null");
+            currentSelectedCommentId = c.getId();
+        }
+    }
 
-        //user marker.getTag() to get the object(Comment/replies whatever) attached to it
+    public void addReplyToComment(View v) {
+        Log.i("ljw", "reply button clicked");
+        EditText replyEditText = findViewById(R.id.replyEditText);
+        Reply reply = new Reply("user", replyEditText.getText().toString(), new Date().getTime());
 
-        //add the reply to the db
+        if (currentSelectedCommentId == null) {
+            Log.i("ljw", "comment has a null id so a DB query won't work");
+            addReplyForm.setVisibility(View.INVISIBLE);
+            return;
+        }
 
-        //refresh the window with showInfoWindow()
+        //get comment by id from firestore
+        dbInstance.collection("comments")
+                .document(currentSelectedCommentId)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        Log.i("ljw", "query successful");
+
+                        Comment c = Objects.requireNonNull(task.getResult()).toObject(Comment.class);
+                        if (c == null) return;
+                        Log.i("ljw", "comment currently has " + c.replies.size() + " replies already");
+                        c.replies.add(reply);
+
+                        //update comment in firestore
+                        dbInstance.collection("comments")
+                                .add(c)
+                                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                    @Override
+                                    public void onSuccess(DocumentReference documentReference) {
+                                        Log.i("ljw", "successfully updated comment with new reply");
+                                        addReplyForm.setVisibility(View.INVISIBLE);
+                                        //add the new comment to the map now that it's in the db
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.i("ljw", "failed updating comment with new reply:\n", e);
+                                    }
+                                });
+                    }
+                });
     }
 }
