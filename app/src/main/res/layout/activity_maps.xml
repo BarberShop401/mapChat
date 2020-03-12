@@ -118,7 +118,7 @@
                 android:textColor="#FFFF00"
                 android:background="#ff8c69"
                 android:clickable="true"
-                android:onClick="submitCommentButtonClicked" />
+                android:onClick="addCommentToDB" />
         </LinearLayout>
 
 
