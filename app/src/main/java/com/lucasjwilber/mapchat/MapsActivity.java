@@ -70,6 +70,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     TextView userLocationTV;
     BitmapDescriptor commentIcon;
     BitmapDescriptor userIcon;
+    String currentSelectedCommentId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,35 +181,38 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             //call geocode to get formatted address
                             Log.i("ljw", "calling geocode api...");
                             AsyncTask.execute(() -> {
+
                                 getUsersFormattedAddress();
 
-                                    //update map on main thread
-                                    Handler handler = new Handler(Looper.getMainLooper()) {
-                                        @Override
-                                        public void handleMessage(Message input) {
-                                            Log.i("ljw", "lat/lng for user is " + userLat + "/" + userLng);
+                                //update map on main thread
+                                Handler handler = new Handler(Looper.getMainLooper()) {
+                                    @Override
+                                    public void handleMessage(Message input) {
+                                        Log.i("ljw", "lat/lng for user is " + userLat + "/" + userLng);
 
-                                            //add a marker to display the user's location:
-                                            mMap.addMarker(new MarkerOptions()
-                                                    .position(new LatLng(userLat, userLng))
-                                                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
-                                                    .title("My Location")
-                                                    .icon(userIcon)
-                                                    .snippet(userCurrentAddress));
+                                        //add a marker to display the user's location:
+                                        mMap.addMarker(new MarkerOptions()
+                                            .position(new LatLng(userLat, userLng))
+                                            .title("My Location")
+                                            .icon(userIcon)
+                                            .snippet(userCurrentAddress));
 
-                                            //center the map on the user
-                                            mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(userLat, userLng)));
+                                        //center the map on the user
+                                        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(userLat, userLng)));
 
-                                            //this zooms in on the user's location by restricting how far you can zoom out:
-                                            //TODO: set the default zoom but somehow still allow users to zoom out farther than that
-                                            mMap.setMinZoomPreference((float) 15.0);
+                                        //this zooms in on the user's location by restricting how far you can zoom out:
+                                        //TODO: set the default zoom but somehow still allow users to zoom out farther than that
+                                        mMap.setMinZoomPreference((float) 15.0);
 
-                                            //using map type 2 to remove clutter, so only our markers are displayed:
-                                            //https://developers.google.com/android/reference/com/google/android/gms/maps/GoogleMap#setMapType(int)
-                                            mMap.setMapType(2);
-                                        }
-                                    };
-                                    handler.obtainMessage().sendToTarget();
+                                        //using map type 2 to remove clutter, so only our markers are displayed:
+                                        //https://developers.google.com/android/reference/com/google/android/gms/maps/GoogleMap#setMapType(int)
+                                        mMap.setMapType(2);
+
+
+                                        addCommentsWithRepliesDummyData();
+                                    }
+                                };
+                                handler.obtainMessage().sendToTarget();
 
                             });
                         }
@@ -290,15 +294,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 double lng = (Double) data.get("lng");
                                 long timestamp = new BigDecimal((Double) data.get("timestamp")).longValue();
                                 Comment c = new Comment(title, text, lat, lng, timestamp);
+                                c.setId(document.getId());
 
-                                mMap.addMarker(new MarkerOptions()
+                                Marker marker = mMap.addMarker(new MarkerOptions()
                                     .position(new LatLng(c.getLat(), c.getLng()))
                                     .icon(commentIcon)
                                     .title(c.getTitle())
                                     .snippet(c.getText()));
 
+
+                                c.replies.add(new Reply("bob", "no it isn't bruv", new Date().getTime()));
+                                c.replies.add(new Reply("brob", "i agree it sucks", new Date().getTime()));
+
+                                marker.setTag(c);
                                 Log.i("ljw", "data: " + title + "," + text + ", " + lat + ", " + lng + ", ");
-                                Log.i("ljw", c.toString());
                             }
                         } else {
                             Log.i("ljw", "Error getting documents.", task.getException());
@@ -364,24 +373,48 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // so that you can't reply to your user pin:
         if (marker.getId().equals("m0")) return;
 
-        //toggle visibility
+        //show reply form
         addReplyForm.setVisibility(View.VISIBLE);
-
-        //user marker.getTag() to get the object(Comment/replies whatever) attached to it
-
-        //add the reply to the db with addReplyToComment
-
-        //refresh the window with showInfoWindow()
+        currentSelectedCommentId = Objects.requireNonNull(marker.getTag()).toString();
     }
 
     public void addReplyToComment(View v) {
         Log.i("ljw", "reply button clicked");
+        EditText replyEditText = findViewById(R.id.replyEditText);
+        Reply reply = new Reply("user", replyEditText.getText().toString(), new Date().getTime());
 
-        //make reply
+        //get comment by id from firestore
+        dbInstance.collection("comments")
+                .whereEqualTo("id", currentSelectedCommentId)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.i("ljw", document.getId() + " => " + document.getData());
+                                Log.i("ljw", "found comment with id " + currentSelectedCommentId + " in firestore");
+                            }
+                        } else {
+                            Log.i("ljw", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
 
-        //add it to db
+        //update the comment in firestore with the new reply
 
         //hide form
+    }
 
+    public void addCommentsWithRepliesDummyData() {
+        Log.i("ljw", "making test comment");
+        Comment c = new Comment("this place", "it is cool", userLat + 0.02, userLng + 0.02, new Date().getTime());
+        Marker marker = mMap.addMarker(new MarkerOptions()
+                .position(new LatLng(c.getLat(), c.getLng()))
+                .icon(commentIcon)
+                .title(c.getTitle())
+                .snippet(c.getText()));
+        c.replies.add(new Reply("bob", "no it isn't bruv", new Date().getTime()));
+        c.replies.add(new Reply("brob", "i agree it sucks", new Date().getTime()));
     }
 }

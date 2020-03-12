@@ -1,6 +1,6 @@
 package com.lucasjwilber.mapchat;
 
-public class Reply<S> {
+public class Reply {
     private String username;
     private String body;
     private long timestamp;

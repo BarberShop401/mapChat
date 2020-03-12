@@ -132,14 +132,14 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.66">
             <TextView
                 android:id="@+id/replyLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="15dp"
                 android:layout_marginRight="15dp"
-                android:text="Comment"
                 tools:text="Title" />
             <EditText
                 android:id="@+id/replyEditText"
@@ -157,7 +157,7 @@
                 android:layout_margin="15dp"
                 android:ems="10"
                 android:layout_gravity="center"
-                android:text="Add Comment"
+                android:text="Reply"
                 android:textStyle="bold"
                 android:textColor="#FFFF00"
                 android:background="#ff8c69"
