@@ -22,7 +22,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -40,6 +39,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -47,13 +47,11 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Date;
-import java.util.Map;
 import java.util.Objects;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, PopupMenu.OnMenuItemClickListener, GoogleMap.OnInfoWindowLongClickListener {
@@ -70,6 +68,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     TextView userLocationTV;
     BitmapDescriptor commentIcon;
     BitmapDescriptor userIcon;
+    Comment currentSelectedComment;
     String currentSelectedCommentId;
 
     @Override
@@ -207,9 +206,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         //using map type 2 to remove clutter, so only our markers are displayed:
                                         //https://developers.google.com/android/reference/com/google/android/gms/maps/GoogleMap#setMapType(int)
                                         mMap.setMapType(2);
-
-
-                                        addCommentsWithRepliesDummyData();
                                     }
                                 };
                                 handler.obtainMessage().sendToTarget();
@@ -287,27 +283,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
                                 Log.i("ljw", document.getId() + " => " + document.getData());
-                                Map<String, Object> data = document.getData();
-                                String title = (String) data.get("title");
-                                String text = (String) data.get("text");
-                                double lat = (Double) data.get("lat");
-                                double lng = (Double) data.get("lng");
-                                long timestamp = new BigDecimal((Double) data.get("timestamp")).longValue();
-                                Comment c = new Comment(title, text, lat, lng, timestamp);
-                                c.setId(document.getId());
+                                Comment c = Objects.requireNonNull(document.toObject(Comment.class));
 
                                 Marker marker = mMap.addMarker(new MarkerOptions()
                                     .position(new LatLng(c.getLat(), c.getLng()))
                                     .icon(commentIcon)
                                     .title(c.getTitle())
                                     .snippet(c.getText()));
-
-
-                                c.replies.add(new Reply("bob", "no it isn't bruv", new Date().getTime()));
-                                c.replies.add(new Reply("brob", "i agree it sucks", new Date().getTime()));
-
                                 marker.setTag(c);
-                                Log.i("ljw", "data: " + title + "," + text + ", " + lat + ", " + lng + ", ");
                             }
                         } else {
                             Log.i("ljw", "Error getting documents.", task.getException());
@@ -356,7 +339,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-
     public void onMapClick(LatLng arg0) {
         addReplyForm.setVisibility(View.INVISIBLE);
         addCommentForm.setVisibility(View.INVISIBLE);
@@ -373,9 +355,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // so that you can't reply to your user pin:
         if (marker.getId().equals("m0")) return;
 
-        //show reply form
         addReplyForm.setVisibility(View.VISIBLE);
-        currentSelectedCommentId = Objects.requireNonNull(marker.getTag()).toString();
+        Comment c = (Comment) marker.getTag();
+        if (c != null) {
+            currentSelectedComment = c;
+            if (c.getId() == null) Log.i("ljw", "id is null");
+            currentSelectedCommentId = c.getId();
+        }
     }
 
     public void addReplyToComment(View v) {
@@ -383,38 +369,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         EditText replyEditText = findViewById(R.id.replyEditText);
         Reply reply = new Reply("user", replyEditText.getText().toString(), new Date().getTime());
 
+        if (currentSelectedCommentId == null) {
+            Log.i("ljw", "comment has a null id so a DB query won't work");
+            addReplyForm.setVisibility(View.INVISIBLE);
+            return;
+        }
+
         //get comment by id from firestore
         dbInstance.collection("comments")
-                .whereEqualTo("id", currentSelectedCommentId)
+                .document(currentSelectedCommentId)
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.i("ljw", document.getId() + " => " + document.getData());
-                                Log.i("ljw", "found comment with id " + currentSelectedCommentId + " in firestore");
-                            }
-                        } else {
-                            Log.i("ljw", "Error getting documents: ", task.getException());
-                        }
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        Log.i("ljw", "query successful");
+
+                        Comment c = Objects.requireNonNull(task.getResult()).toObject(Comment.class);
+                        if (c == null) return;
+                        Log.i("ljw", "comment currently has " + c.replies.size() + " replies already");
+                        c.replies.add(reply);
+
+                        //update comment in firestore
+                        dbInstance.collection("comments")
+                                .add(c)
+                                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                    @Override
+                                    public void onSuccess(DocumentReference documentReference) {
+                                        Log.i("ljw", "successfully updated comment with new reply");
+                                        addReplyForm.setVisibility(View.INVISIBLE);
+                                        //add the new comment to the map now that it's in the db
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.i("ljw", "failed updating comment with new reply:\n", e);
+                                    }
+                                });
                     }
                 });
-
-        //update the comment in firestore with the new reply
-
-        //hide form
-    }
-
-    public void addCommentsWithRepliesDummyData() {
-        Log.i("ljw", "making test comment");
-        Comment c = new Comment("this place", "it is cool", userLat + 0.02, userLng + 0.02, new Date().getTime());
-        Marker marker = mMap.addMarker(new MarkerOptions()
-                .position(new LatLng(c.getLat(), c.getLng()))
-                .icon(commentIcon)
-                .title(c.getTitle())
-                .snippet(c.getText()));
-        c.replies.add(new Reply("bob", "no it isn't bruv", new Date().getTime()));
-        c.replies.add(new Reply("brob", "i agree it sucks", new Date().getTime()));
     }
 }

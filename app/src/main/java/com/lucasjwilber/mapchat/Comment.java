@@ -12,6 +12,8 @@ public class Comment {
     private long timestamp;
     public List<Reply> replies;
 
+    // zero-arg constructor for firestore .toObject method
+    public Comment(){};
     public Comment(String title, String text, double lat, double lng, long timestamp) {
         this.title = title;
         this.text = text;

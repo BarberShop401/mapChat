@@ -5,6 +5,7 @@ public class Reply {
     private String body;
     private long timestamp;
 
+    public Reply(){};
     public Reply(String username, String body, long timestamp) {
         this.username = username;
         this.body = body;
