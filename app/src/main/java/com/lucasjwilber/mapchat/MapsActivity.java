@@ -52,6 +52,7 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.Objects;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, PopupMenu.OnMenuItemClickListener, GoogleMap.OnInfoWindowLongClickListener {
@@ -70,6 +71,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     BitmapDescriptor userIcon;
     Comment currentSelectedComment;
     String currentSelectedCommentId;
+    Marker currentSelectedMarker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +91,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
     }
 
 //    pop up method to show hamburger
@@ -161,6 +164,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setOnInfoWindowLongClickListener(this::onInfoWindowLongClick);
         mMap.setOnMapClickListener(this::onMapClick);
 
+//        addTestCommentAtLatLng(userLat + 0.001, userLng + 0.001);
+//        addTestCommentAtLatLng(userLat - 0.001, userLng + 0.002);
+
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -169,53 +175,53 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     MY_PERMISSIONS_REQUEST_LOCATION);
         } else {
             fusedLocationClient.getLastLocation()
-                    .addOnSuccessListener(this, location -> {
-                        Log.i("ljw", "successfully got location");
-                        // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
-                            userLat = location.getLatitude();
-                            userLng = location.getLongitude();
-                            Log.i("ljw", "lat: " + userLat + "\nlong: " + userLng);
+                .addOnSuccessListener(this, location -> {
+                    Log.i("ljw", "successfully got location");
+                    // Got last known location. In some rare situations this can be null.
+                    if (location != null) {
+                        userLat = location.getLatitude();
+                        userLng = location.getLongitude();
+                        Log.i("ljw", "lat: " + userLat + "\nlong: " + userLng);
 
-                            //call geocode to get formatted address
-                            Log.i("ljw", "calling geocode api...");
-                            AsyncTask.execute(() -> {
+                        //call geocode to get formatted address
+                        Log.i("ljw", "calling geocode api...");
+                        AsyncTask.execute(() -> {
 
-                                getUsersFormattedAddress();
+                            getUsersFormattedAddress();
 
-                                //update map on main thread
-                                Handler handler = new Handler(Looper.getMainLooper()) {
-                                    @Override
-                                    public void handleMessage(Message input) {
-                                        Log.i("ljw", "lat/lng for user is " + userLat + "/" + userLng);
+                            //update map on main thread
+                            Handler handler = new Handler(Looper.getMainLooper()) {
+                                @Override
+                                public void handleMessage(Message input) {
+                                    Log.i("ljw", "lat/lng for user is " + userLat + "/" + userLng);
 
-                                        //add a marker to display the user's location:
-                                        mMap.addMarker(new MarkerOptions()
-                                            .position(new LatLng(userLat, userLng))
-                                            .title("My Location")
-                                            .icon(userIcon)
-                                            .snippet(userCurrentAddress));
+                                    //add a marker to display the user's location:
+                                    mMap.addMarker(new MarkerOptions()
+                                        .position(new LatLng(userLat, userLng))
+                                        .title("My Location")
+                                        .icon(userIcon)
+                                        .snippet(userCurrentAddress));
 
-                                        //center the map on the user
-                                        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(userLat, userLng)));
+                                    //center the map on the user
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(userLat, userLng)));
 
-                                        //this zooms in on the user's location by restricting how far you can zoom out:
-                                        //TODO: set the default zoom but somehow still allow users to zoom out farther than that
-                                        mMap.setMinZoomPreference((float) 15.0);
+                                    //this zooms in on the user's location by restricting how far you can zoom out:
+                                    //TODO: set the default zoom but somehow still allow users to zoom out farther than that
+                                    mMap.setMinZoomPreference((float) 15.0);
 
-                                        //using map type 2 to remove clutter, so only our markers are displayed:
-                                        //https://developers.google.com/android/reference/com/google/android/gms/maps/GoogleMap#setMapType(int)
-                                        mMap.setMapType(2);
-                                    }
-                                };
-                                handler.obtainMessage().sendToTarget();
+                                    //using map type 2 to remove clutter, so only our markers are displayed:
+                                    //https://developers.google.com/android/reference/com/google/android/gms/maps/GoogleMap#setMapType(int)
+                                    mMap.setMapType(2);
+                                }
+                            };
+                            handler.obtainMessage().sendToTarget();
 
-                            });
-                        }
-                    })
-                    .addOnFailureListener(this, error -> {
-                        Log.i("ljw", "error getting location:\n" + error.toString());
-                    });
+                        });
+                    }
+                })
+                .addOnFailureListener(this, error -> {
+                    Log.i("ljw", "error getting location:\n" + error.toString());
+                });
         }
     }
 
@@ -276,27 +282,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void getCommentsFromDbAndCreateMapMarkers() {
         dbInstance.collection("comments")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
-                                Log.i("ljw", document.getId() + " => " + document.getData());
-                                Comment c = Objects.requireNonNull(document.toObject(Comment.class));
+            .get()
+            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                            Comment c = Objects.requireNonNull(document.toObject(Comment.class));
+                            c.setId(document.getId());
 
-                                Marker marker = mMap.addMarker(new MarkerOptions()
-                                    .position(new LatLng(c.getLat(), c.getLng()))
-                                    .icon(commentIcon)
-                                    .title(c.getTitle())
-                                    .snippet(c.getText()));
-                                marker.setTag(c);
-                            }
-                        } else {
-                            Log.i("ljw", "Error getting documents.", task.getException());
+                            Marker marker = mMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(c.getLat(), c.getLng()))
+                                .icon(commentIcon)
+                                .title(c.getTitle())
+                                .snippet(c.getText()));
+
+                            marker.setTag(c);
+
+                            Log.i("ljw", "found comment \"" + c.getTitle() + "/" + c.getText() + "\" with id " + c.getId());
                         }
+                    } else {
+                        Log.i("ljw", "Error getting documents.", task.getException());
                     }
-                });
+                }
+            });
     }
 
     public void getUsersFormattedAddress() {
@@ -362,6 +371,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if (c.getId() == null) Log.i("ljw", "id is null");
             currentSelectedCommentId = c.getId();
         }
+        currentSelectedMarker = marker;
     }
 
     public void addReplyToComment(View v) {
@@ -377,35 +387,77 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //get comment by id from firestore
         dbInstance.collection("comments")
-                .document(currentSelectedCommentId)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            .document(currentSelectedCommentId)
+            .get()
+            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    Log.i("ljw", "query successful");
+
+                    Comment c = Objects.requireNonNull(task.getResult()).toObject(Comment.class);
+//                        if (c == null) return;
+                    Log.i("ljw", "comment currently has " + c.replies.size() + " replies already:");
+                    Log.i("ljw", c.replies.toString());
+                    c.replies.add(reply);
+
+                    //update comment in firestore
+                    dbInstance.collection("comments")
+                        .document(currentSelectedCommentId)
+                        .set(c)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Log.i("ljw", "successfully updated comment with new reply");
+                                addReplyForm.setVisibility(View.INVISIBLE);
+                                currentSelectedMarker.showInfoWindow();
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.i("ljw", "failed updating comment with new reply:\n", e);
+                            }
+                        });
+                }
+            });
+    }
+
+    public void deleteDocumentByID(String collection, String id) {
+        dbInstance.collection(collection).document(id)
+            .delete()
+            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.i("ljw", "successfully deleted " + id + " from " + collection);
+                }
+            })
+            .addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.i("ljw", "Error deleting document", e);
+                }
+            });
+    }
+
+    public void addTestCommentAtLatLng(Double lat, Double lng) {
+        Comment comment = new Comment("test", "bleh", lat, lng, new Date().getTime());
+        Log.i("ljw", "new comment created: " + comment.toString());
+        dbInstance.collection("comments")
+                .add(comment)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        Log.i("ljw", "query successful");
-
-                        Comment c = Objects.requireNonNull(task.getResult()).toObject(Comment.class);
-                        if (c == null) return;
-                        Log.i("ljw", "comment currently has " + c.replies.size() + " replies already");
-                        c.replies.add(reply);
-
-                        //update comment in firestore
-                        dbInstance.collection("comments")
-                                .add(c)
-                                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                                    @Override
-                                    public void onSuccess(DocumentReference documentReference) {
-                                        Log.i("ljw", "successfully updated comment with new reply");
-                                        addReplyForm.setVisibility(View.INVISIBLE);
-                                        //add the new comment to the map now that it's in the db
-                                    }
-                                })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Log.i("ljw", "failed updating comment with new reply:\n", e);
-                                    }
-                                });
+                    public void onSuccess(DocumentReference documentReference) {
+                        mMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(userLat, userLng))
+                                .icon(commentIcon)
+                                .title(comment.getTitle())
+                                .snippet(comment.getText()));
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.i("vik", "Error adding document", e);
                     }
                 });
     }

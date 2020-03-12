@@ -1,6 +1,9 @@
 package com.lucasjwilber.mapchat;
 
+import java.util.UUID;
+
 public class Reply {
+    private String id;
     private String username;
     private String body;
     private long timestamp;
@@ -34,5 +37,13 @@ public class Reply {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }
