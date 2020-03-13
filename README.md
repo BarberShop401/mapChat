@@ -7,13 +7,16 @@ An Android-based app where users can create, read, and reply to comments in real
 
 ## How to use:
   - On Android:
+  
     - Install the ![APK](/mapchat.apk) and run it on your device.
+    
   - On an emulator:
+  
     - Install Android Studio on your machine,
     - Clone this repo onto your machine via 'git clone https://github.com/BarberShop401/mapChat.git' in your terminal,
     - In Android Studio, click File > Import Project > find and select the build.gradle file in the root of the cloned repo folder,
-    - Ensure you have an emulator set up in your AVD manager,
     - Build the app,
+    - Ensure you have an emulator set up in your AVD manager,
     - Click the green play button.
 
 ## Team Members
@@ -24,7 +27,7 @@ An Android-based app where users can create, read, and reply to comments in real
 ## Project Management: Trello
 https://trello.com/b/0Q5UCPBG/401-final-project-management
 
-## User Stories (6)
+## User Stories
 #### 1
 As a user I want the ability to add comments so other people can see/reply to them.
 ##### Feature Tasks: 
