@@ -247,12 +247,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         Log.i("vik", "DocumentSnapshot added with ID: " + documentReference.getId());
                         Log.i("ljw", "successfully added new comment to DB");
 
+                        //set the comment's id to whatever id it was given by firestore
+                        comment.setId(documentReference.getId());
+
                         //add the new comment to the map now that it's in the db
-                        mMap.addMarker(new MarkerOptions()
+                        Marker m = mMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(userLat, userLng))
                                 .icon(commentIcon)
                                 .title(commentTitle)
                                 .snippet(commentBody));
+                        m.setTag(comment);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
