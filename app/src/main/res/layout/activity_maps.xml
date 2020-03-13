@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:map="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/map"
+    android:name="com.google.android.gms.maps.SupportMapFragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MapsActivity"
+    android:clickable="true"
+    android:onClick="toggleFormVisibility" >
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageButton
+            android:id="@+id/button"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="27dp"
+            android:layout_marginLeft="27dp"
+            android:layout_marginTop="28dp"
+
+            android:onClick="showPopup"
+            android:text="show popup"
+
+            app:layout_constraintHorizontal_bias="0.407"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.461"
+            android:background="@drawable/ic_menu"
+            />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/addCommentButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="40dp"
+            android:layout_marginRight="40dp"
+            android:layout_marginBottom="40dp"
+            android:clickable="true"
+            android:onClick="toggleFormVisibility"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@drawable/addcommentbackground" />
+
+        <LinearLayout
+            android:id="@+id/addCommentForm"
+            android:layout_width="231dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="invisible"
+            android:background="#fffee0"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+            <TextView
+                android:id="@+id/commentLocationTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:text="Your Location"
+                android:textAlignment="center"
+                android:textSize="12sp"
+                android:layout_gravity="center_horizontal" />
+            <TextView
+                android:id="@+id/commentTitleLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:text="Title"
+                tools:text="Title" />
+            <EditText
+                android:id="@+id/commentTitleEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:background="#FFFFFF"
+                android:ems="10"
+                android:inputType="textPersonName" />
+            <TextView
+                android:id="@+id/commentBodyLabel"
+                android:layout_width="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_height="19dp"
+                android:text="Comment"
+                tools:text="Comment" />
+            <EditText
+                android:id="@+id/commentBodyEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:background="#FFFFFF"
+                android:ems="10"
+                android:gravity="start|top"
+                android:inputType="textMultiLine" />
+            <Button
+                android:id="@+id/commentSubmitButton"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_margin="15dp"
+                android:ems="10"
+                android:layout_gravity="center"
+                android:text="Post"
+                android:textStyle="bold"
+                android:textColor="#FFFF00"
+                android:background="#ff8c69"
+                android:clickable="true"
+                android:onClick="addCommentToDB" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/addReplyForm"
+            android:layout_width="231dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="invisible"
+            android:background="#fffee0"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.6">
+            <TextView
+                android:id="@+id/replyLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                tools:text="Title" />
+            <EditText
+                android:id="@+id/replyEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:background="#FFFFFF"
+                android:ems="10"
+                android:inputType="textPersonName" />
+            <Button
+                android:id="@+id/replySubmitButton"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_margin="15dp"
+                android:ems="10"
+                android:layout_gravity="center"
+                android:text="Reply"
+                android:textStyle="bold"
+                android:textColor="#FFFF00"
+                android:background="#ff8c69"
+                android:clickable="true"
+                android:onClick="addReplyToComment" />
+        </LinearLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+</fragment>

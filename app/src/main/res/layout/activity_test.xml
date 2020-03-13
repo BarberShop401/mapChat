@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--this file is used to test layouts with the WYSIWYG editor, because the Maps activity is all done in a fragment, so its WYSIWYG editor doesn't work-->
+
+
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="231dp"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:orientation="vertical"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.78">
+
+        <TextView
+            android:id="@+id/commentLocationTextView"
+            android:layout_width="match_parent"
+            android:layout_height="22dp"
+            android:text="2901 3rd Ave Seattle, WA"
+            tools:text="2901 3rd Ave Seattle, WA" />
+
+        <TextView
+            android:id="@+id/commentTitleLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Title"
+            tools:text="Title" />
+
+        <EditText
+            android:id="@+id/commentTitleEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:text="Name" />
+
+        <TextView
+            android:id="@+id/commentBodyLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="19dp"
+            android:text="Comment"
+            tools:text="Comment" />
+
+        <EditText
+            android:id="@+id/commentBodyEditText"
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:ems="10"
+            android:gravity="start|top"
+            android:inputType="textMultiLine" />
+
+        <Button
+            android:id="@+id/commentSubmitButton"
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:background="#ff8c69"
+            android:ems="10"
+            android:gravity="start|top"
+            android:onClick="toggleFormVisibility"
+            android:text="Post"
+            android:textColor="#FFFF00"
+            android:textStyle="bold"
+            tools:text="Post" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/button"
+        android:layout_width="159dp"
+        android:layout_height="150dp"
+        android:layout_marginStart="27dp"
+        android:layout_marginLeft="27dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="337dp"
+        android:layout_marginRight="337dp"
+        android:layout_marginBottom="660dp"
+        android:onClick="showPopup"
+        android:text="show popup"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.098"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/ic_menu" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
