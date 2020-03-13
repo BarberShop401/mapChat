@@ -7,8 +7,8 @@ MapChat allows a user to leave comments on Google Maps. Upon entering Mapchat, t
 ## Scope
 Our app will:
 - Allow a user to write comments for places of their choice. 
-- Allow a user will be able to add, update and delete their comments
-- Allow a user to have a profile page where they can edit their username
+- Allow a user will be able to reply to comments
+- Allow a user to view all comments near their location
 
 Our app will NOT: 
 - Allow users to store credit card information,
