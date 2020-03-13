@@ -1,20 +1,23 @@
 # Mapchat
 ![Mapchat Logo](/assets/mapchatlogo.png)
 
-An Android-based app where users can create, read, and reply to comments on locations in Google Maps.
+An Android-based app where users can create, read, and reply to comments in real time using Google Maps.
 
 ![Mapchat screenshot](/assets/mapchat-screenshot.png)
 
-
 ## How to use:
-  - Install the ![APK](/mapchat.apk)
+  - On Android:
   
-  or if you would like to modify the app:
+    - Install the ![APK](/mapchat.apk) and run it on your device.
+    
+  - On an emulator:
   
-  - Install Android Studio
-  - Clone this repo onto your machine
-  - In Android Studio, click File > Import Project > find and select the build.gradle file in the root of the cloned repo folder
-  - Build the app
+    - Install Android Studio on your machine,
+    - Clone this repo onto your machine via 'git clone https://github.com/BarberShop401/mapChat.git' in your terminal,
+    - In Android Studio, click File > Import Project > find and select the build.gradle file in the root of the cloned repo folder,
+    - Build the app,
+    - Ensure you have an emulator set up in your AVD manager,
+    - Click the green play button.
 
 ## Team Members
 - Vik Akam
@@ -77,6 +80,5 @@ Acceptance test: Ensure that replies can be created and displayed within comment
 ## Domain Model:
 ![Domain Model](./assets/mapchat-domain-model.jpg)
 
-  
 ## DBER: 
 ![DBER](./assets/mapchat-dber.jpg)
