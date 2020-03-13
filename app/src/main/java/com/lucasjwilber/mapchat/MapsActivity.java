@@ -102,47 +102,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         popup.show();
     }
 
-//    private void writeNewCommentToDB(String title, String body, double userLat, double userLng, long timestamp) {
-//        Comment newComment = new Comment(title, body, userLat, userLng, timestamp);
-//        // Create a new user with a first and last name
-//
-//        Map<String, Object> user = new HashMap<>();
-//        user.put("first", "Ada");
-//        user.put("last", "Lovelace");
-//        user.put("born", 1815);
-//
-//// Add a new document with a generated ID
-//        dbInstance.collection("users")
-//                .add(user)
-//                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-//                    @Override
-//                    public void onSuccess(DocumentReference documentReference) {
-//                        Log.i("vik", "DocumentSnapshot added with ID: " + documentReference.getId());
-//                    }
-//                })
-//                .addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//                        Log.i("vik", "Error adding document", e);
-//                    }
-//                });
-//        dbInstance.collection("users")
-//            .get()
-//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//        @Override
-//        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//            if (task.isSuccessful()) {
-//                for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
-//                    Log.i("vik", document.getId() + " => " + document.getData());
-//                }
-//            } else {
-//                Log.i("vik", "Error getting documents.", task.getException());
-//            }
-//        }
-//    });
-//    }
-
-
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
