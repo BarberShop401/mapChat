@@ -19,20 +19,22 @@ Our app will NOT:
 In order for a minimum viable product, the app should: 
 - Upon opening the app, take the user to a main screen,
 - Allow the user to add a comment at a location,
-- Allow the user to update and delete the comment.
+- Allow the user to reply to other comments,
+- Allow the user to see all comments and replies made thus far.
 
 ### Stretch goals
 Stretch goals for this app include: 
 - Allowing a user to upload images of that location,
 - Allowing a user to set up an account to have associated replies and comments,
 - Allowing a user to upload audio clips of that location,
-- Animated features in the layout for a more pleasant and enjoyable experience.
+- Animated features in the layout for a more pleasant and enjoyable experience,
+- Integrating elaborate JUnit/Integration/Espresso testing.
 
 ### Data Flow
 MVP: 
 1. User opens the app. 
 2. The app will display Google maps on the Main Activity. 
-3. Add Comment button will start a Comment Activity where they can write the body for the comment and submit it using the submit button.
+3. Add Comment button will start a Comment modal where they can write the body for the comment and submit it using the submit button.
 3. User's comments will be left at that latitude and longitude and be saved in Firebase.
 4. User's comments will be overlaid on that place.
  
