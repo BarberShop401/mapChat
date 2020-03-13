@@ -92,6 +92,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+//        deleteDocumentByID("comments", "");
+
     }
 
 //    pop up method to show hamburger
@@ -180,10 +182,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         userLng = location.getLongitude();
                         Log.i("ljw", "lat: " + userLat + "\nlong: " + userLng);
 
-                        //call geocode to get formatted address
-                        Log.i("ljw", "calling geocode api...");
                         AsyncTask.execute(() -> {
-
+                            //call geocode to get formatted address
+                            Log.i("ljw", "calling geocode api...");
                             getUsersFormattedAddress();
 
                             //update map on main thread
@@ -212,7 +213,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 }
                             };
                             handler.obtainMessage().sendToTarget();
-
                         });
                     }
                 })
@@ -253,6 +253,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         //add the new comment to the map now that it's in the db
                         Marker m = mMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(userLat, userLng))
+                                .anchor(0, 1)
                                 .icon(commentIcon)
                                 .title(commentTitle)
                                 .snippet(commentBody));
@@ -294,6 +295,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                             Marker marker = mMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(c.getLat(), c.getLng()))
+                                .anchor(0, 1)
                                 .icon(commentIcon)
                                 .title(c.getTitle())
                                 .snippet(c.getText()));
@@ -311,7 +313,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void getUsersFormattedAddress() {
         try {
-            URL url = new URL("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + userLat + "," + userLng + "&key=AIzaSyAy2p9oGlSYUvXCQE0K8az2NcFKPK_YVEY");
+            URL url = new URL("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + userLat + "," + userLng + "&key=AIzaSyCPR3lW_wkbjfNPei-UIbbhWWksjwWpy7c");
 
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -418,6 +420,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 currentSelectedMarker.remove();
                                 Marker marker = mMap.addMarker(new MarkerOptions()
                                         .position(new LatLng(c.getLat(), c.getLng()))
+                                        .anchor(0, 1)
                                         .icon(commentIcon)
                                         .title(c.getTitle())
                                         .snippet(c.getText()));
@@ -463,6 +466,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onSuccess(DocumentReference documentReference) {
                         mMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(userLat, userLng))
+                                .anchor(0, 1)
                                 .icon(commentIcon)
                                 .title(comment.getTitle())
                                 .snippet(comment.getText()));
