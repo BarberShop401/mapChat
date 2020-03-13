@@ -8,7 +8,9 @@ An Android-based app where users can create, read, and reply to comments on loca
 
 ## How to use:
   - Install the ![APK](/mapchat.apk)
+  
   or if you would like to modify the app:
+  
   - Install Android Studio
   - Clone this repo onto your machine
   - In Android Studio, click File > Import Project > find and select the build.gradle file in the root of the cloned repo folder
@@ -22,7 +24,7 @@ An Android-based app where users can create, read, and reply to comments on loca
 ## Project Management: Trello
 https://trello.com/b/0Q5UCPBG/401-final-project-management
 
-## User Stories (6)
+## User Stories
 #### 1
 As a user I want the ability to add comments so other people can see/reply to them.
 ##### Feature Tasks: 
