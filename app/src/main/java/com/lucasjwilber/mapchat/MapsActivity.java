@@ -58,7 +58,6 @@ import java.util.Objects;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, PopupMenu.OnMenuItemClickListener, GoogleMap.OnInfoWindowLongClickListener {
 
     private GoogleMap mMap;
-    private FusedLocationProviderClient fusedLocationClient;
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     public double userLat;
     public double userLng;
@@ -90,7 +89,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
 
 //        deleteDocumentByID("comments", "");
 
@@ -104,6 +105,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         popup.show();
     }
 
+    // lots of copy-pasta comments that aren't true anymore... you're not adding to Australia here.
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -118,11 +120,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         //remove the directions/gps buttons
         mMap.getUiSettings().setMapToolbarEnabled(false);
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         CommentWindowAdapter windowAdapter = new CommentWindowAdapter(getApplicationContext());
         mMap.setInfoWindowAdapter(windowAdapter);
-        mMap.setOnInfoWindowLongClickListener(this::onInfoWindowLongClick);
+        mMap.setOnInfoWindowLongClickListener(this);
         mMap.setOnMapClickListener(this::onMapClick);
 
         if (ContextCompat.checkSelfPermission(this,
@@ -210,6 +212,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         comment.setId(documentReference.getId());
 
                         //add the new comment to the map now that it's in the db
+                        // This code really should have been abstracted into a method, rather than copy pasted three times in this one activity.
+                        // You could have even made it an instance method for a comment... but instead you have copy pasta.
                         Marker m = mMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(userLat, userLng))
                                 .anchor(0, 1)
@@ -272,6 +276,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void getUsersFormattedAddress() {
         try {
+            // Why are you making web requests for this, rather than using the built in geocoding functionality on Android?
+            // See https://developer.android.com/reference/android/location/Geocoder
             URL url = new URL("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + userLat + "," + userLng + "&key=AIzaSyCPR3lW_wkbjfNPei-UIbbhWWksjwWpy7c");
 
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -377,6 +383,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                 //refresh marker
                                 currentSelectedMarker.remove();
+
                                 Marker marker = mMap.addMarker(new MarkerOptions()
                                         .position(new LatLng(c.getLat(), c.getLng()))
                                         .anchor(0, 1)
@@ -398,6 +405,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             });
     }
 
+    // Lots of unused code down here; it would be better to remove this code before submitting.
     public void deleteDocumentByID(String collection, String id) {
         dbInstance.collection(collection).document(id)
             .delete()

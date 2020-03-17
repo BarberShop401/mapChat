@@ -10,6 +10,7 @@ import static org.junit.Assert.*;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 public class UserTest {
+    // only one very small test :(
     @Test
     public void testCommentInstantiate() {
         User vik = new User("Vik", "vik@gmail.com");
